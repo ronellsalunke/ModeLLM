@@ -39,6 +39,7 @@ data class ModelFilters(
     val statuses: Set<String> = emptySet(),
     val knowledgeAfter: String? = null,
     val knowledgeBefore: String? = null,
+    val labIds: Set<String> = emptySet(),
 )
 
 data class ModelLimits(
@@ -92,4 +93,7 @@ data class Model(
     val reasoningOptions: List<ReasoningOption>,
     val interleavedJson: String?,
     val providerNpm: String?,
-)
+) {
+    val supportsInterleaved: Boolean
+        get() = interleavedJson != null && interleavedJson != "false" && interleavedJson != "null"
+}

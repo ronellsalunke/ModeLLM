@@ -11,7 +11,11 @@ val databaseModule = module {
             androidContext(),
             ModeLLMDatabase::class.java,
             "modellm.db",
-        ).build()
+        )
+            // Pre-release schema v2. The catalog is fully re-downloadable,
+            // so a schema change resets the local snapshot instead of keeping stale tables.
+            .fallbackToDestructiveMigration(dropAllTables = true)
+            .build()
     }
 
     single { get<ModeLLMDatabase>().providerDao() }

@@ -114,16 +114,20 @@ class CatalogMapper(private val json: Json) {
             modelCount = row.modelCount,
         )
 
-    fun toModel(row: ModelWithProvider): Model {
+    fun toModel(row: ModelWithProvider, includeReasoningOptions: Boolean = false): Model {
         val entity = row.model
-        val reasoningOptions = entity.reasoningOptionsJson
-            ?.let { stored ->
-                runCatching {
-                    json.decodeFromString<List<ReasoningOptionDto>>(stored)
-                }.getOrNull()
-            }
-            .orEmpty()
-            .map { it.toDomain() }
+        val reasoningOptions = if (includeReasoningOptions) {
+            entity.reasoningOptionsJson
+                ?.let { stored ->
+                    runCatching {
+                        json.decodeFromString<List<ReasoningOptionDto>>(stored)
+                    }.getOrNull()
+                }
+                .orEmpty()
+                .map { it.toDomain() }
+        } else {
+            emptyList()
+        }
 
         return Model(
             providerId = entity.providerId,

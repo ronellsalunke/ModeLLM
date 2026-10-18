@@ -47,4 +47,16 @@ interface ModelDao {
         """,
     )
     fun observeModelsByProvider(providerId: String): Flow<List<ModelWithProvider>>
+
+    @Query(
+        """
+        SELECT m.*, p.name AS providerName
+        FROM models m
+        JOIN providers p ON p.id = m.providerId
+        JOIN canonical_model_providers c ON c.providerId = m.providerId AND c.providerModelId = m.modelId
+        WHERE LOWER(c.canonicalId) = LOWER(:canonicalId)
+        ORDER BY p.name COLLATE NOCASE, m.name COLLATE NOCASE
+        """,
+    )
+    fun observeCanonicalProviders(canonicalId: String): Flow<List<ModelWithProvider>>
 }

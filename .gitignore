@@ -14,3 +14,6 @@
 .cxx
 local.properties
 docs/
+keystore.properties
+*.jks
+*.keystore

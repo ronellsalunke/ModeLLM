@@ -1,0 +1,26 @@
+package dev.ronellsalunke.modellm.data.model
+
+data class CanonicalModel(
+    val id: String,
+    val name: String,
+    val description: String?,
+    val family: String?,
+    val labId: String,
+    val labName: String,
+    val providerCount: Int,
+    val attachment: Boolean,
+    val reasoning: Boolean,
+    val toolCall: Boolean,
+    val structuredOutput: Boolean,
+    val temperature: Boolean,
+    val openWeights: Boolean,
+    val releaseDate: String?,
+    val lastUpdated: String?,
+    val knowledge: String?,
+    val limits: ModelLimits,
+    val minInputCost: Double?,
+    val minOutputCost: Double?,
+    val inputModalities: List<Modality>,
+    val outputModalities: List<Modality>,
+    val modelType: String?,
+)
