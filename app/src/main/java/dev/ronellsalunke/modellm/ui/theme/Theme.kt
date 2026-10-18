@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 val LocalAppPalette = staticCompositionLocalOf { LightAppPalette }
+val LocalMaterialYouEnabled = staticCompositionLocalOf { false }
 
 private val LightColorScheme = lightColorScheme(
     primary = BrandOrange,
@@ -105,15 +106,16 @@ fun ModeLLMTheme(
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
+    val useDynamicColor = dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
+        useDynamicColor ->
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
 
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
 
-    val palette = if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+    val palette = if (useDynamicColor) {
         AppPalette(
             brand = colorScheme.primary,
             brandText = colorScheme.primary,
@@ -153,7 +155,10 @@ fun ModeLLMTheme(
         }
     }
 
-    CompositionLocalProvider(LocalAppPalette provides palette) {
+    CompositionLocalProvider(
+        LocalAppPalette provides palette,
+        LocalMaterialYouEnabled provides useDynamicColor,
+    ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = Typography,
