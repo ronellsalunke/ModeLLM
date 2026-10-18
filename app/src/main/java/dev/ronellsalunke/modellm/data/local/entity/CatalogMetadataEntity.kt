@@ -1,0 +1,14 @@
+package dev.ronellsalunke.modellm.data.local.entity
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "catalog_metadata")
+data class CatalogMetadataEntity(
+    @PrimaryKey val id: Int = SINGLETON_ID,
+    val lastSyncedAt: Long? = null,
+) {
+    companion object {
+        const val SINGLETON_ID = 0
+    }
+}
