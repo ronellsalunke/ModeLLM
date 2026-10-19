@@ -16,6 +16,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,16 +82,14 @@ private fun CatalogLogo(url: String, name: String, size: Dp) {
 fun CatalogDivider() = HorizontalDivider(thickness = Dimens.hairline, color = LocalAppPalette.current.border)
 
 @Composable
-fun AppHeader(title: String, subtitle: String? = null, actions: @Composable RowScope.() -> Unit = {}) {
+fun AppHeader(title: String, actions: @Composable RowScope.() -> Unit = {}) {
     Row(
         Modifier.fillMaxWidth().heightIn(min = Dimens.headerHeight).padding(horizontal = Dimens.lg),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(Dimens.md),
     ) {
         Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-        if (subtitle != null) Text(subtitle, color = LocalAppPalette.current.textTertiary,
-            style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
-        if (subtitle == null) Spacer(Modifier.weight(1f))
+        Spacer(Modifier.weight(1f))
         actions()
     }
     CatalogDivider()
@@ -317,6 +318,32 @@ fun EmptyState(title: String, message: String? = null, actionLabel: String? = nu
 @Composable
 fun ErrorState(message: String, onRetry: () -> Unit) =
     EmptyState("Couldn't load the catalog", message, "Retry", onRetry)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AppPullToRefreshBox(
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    val state = rememberPullToRefreshState()
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = onRefresh,
+        modifier = modifier,
+        state = state,
+        indicator = {
+            PullToRefreshDefaults.Indicator(
+                state = state,
+                isRefreshing = isRefreshing,
+                modifier = Modifier.align(Alignment.TopCenter),
+                color = LocalAppPalette.current.brand,
+            )
+        },
+        content = content,
+    )
+}
 
 @Composable
 fun ExternalLink(label: String, url: String, modifier: Modifier = Modifier) {

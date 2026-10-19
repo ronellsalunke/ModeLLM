@@ -17,6 +17,7 @@ data class SettingsUiState(
     val syncState: SyncState = SyncState.Idle,
     val lastSyncedAt: Long? = null,
     val error: String? = null,
+    val settingsLoaded: Boolean = false,
 )
 
 class SettingsViewModel(
@@ -25,8 +26,15 @@ class SettingsViewModel(
     private val scheduler: CatalogSyncScheduler,
 ) : ViewModel() {
     private val error = MutableStateFlow<String?>(null)
-    val uiState = combine(repository.settings, catalog.syncState, catalog.observeLastSyncedAt(), error) {
-            settings, sync, last, error -> SettingsUiState(settings, sync, last, error)
+    private val settingsLoaded = MutableStateFlow(false)
+    val uiState = combine(
+        repository.settings.onEach { settingsLoaded.value = true },
+        catalog.syncState,
+        catalog.observeLastSyncedAt(),
+        error,
+        settingsLoaded,
+    ) { settings, sync, last, error, loaded ->
+        SettingsUiState(settings, sync, last, error, loaded)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsUiState())
 
     fun setThemeMode(mode: ThemeMode) = save { repository.setThemeMode(mode) }

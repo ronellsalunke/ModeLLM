@@ -13,6 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.ronellsalunke.modellm.data.repository.SyncState
@@ -41,20 +47,17 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
                 SectionHeader("Appearance")
                 Column(Modifier.padding(horizontal = Dimens.lg), verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
                     Text("Theme", style = MaterialTheme.typography.bodyMedium)
-                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                        ThemeMode.entries.forEachIndexed { index, mode ->
-                            SegmentedButton(selected = state.settings.themeMode == mode, onClick = { viewModel.setThemeMode(mode) },
-                                shape = SegmentedButtonDefaults.itemShape(index, ThemeMode.entries.size, MaterialTheme.shapes.small)) {
-                                Text(mode.name)
-                            }
-                        }
-                    }
+                    SingleChoiceButtonGroup(
+                        labels = ThemeMode.entries.map { it.name },
+                        selectedIndex = ThemeMode.entries.indexOf(state.settings.themeMode),
+                        onSelect = { viewModel.setThemeMode(ThemeMode.entries[it]) },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                     Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text("Use wallpaper colors", modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
                         Switch(checked = state.settings.dynamicColor, onCheckedChange = viewModel::setDynamicColor, enabled = wallpaperSupported,
                             modifier = Modifier.semantics { contentDescription = "Use wallpaper colors" })
                     }
-                    Text("Material You uses your wallpaper colors.", style = MaterialTheme.typography.bodySmall, color = LocalAppPalette.current.textSecondary)
                     if (!wallpaperSupported) Text("Requires Android 12 or later.", style = MaterialTheme.typography.bodySmall, color = LocalAppPalette.current.textSecondary)
                     state.error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
                 }
@@ -62,7 +65,16 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
                 CatalogDivider()
                 SectionHeader("Catalog")
                 Column(Modifier.padding(horizontal = Dimens.lg), verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-                    Text("Last updated: $updated", style = MaterialTheme.typography.bodyMedium)
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Text("Last updated: $updated", modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+                        Button(onClick = viewModel::refresh,
+                            enabled = canSync && state.syncState !is SyncState.Running,
+                            shape = MaterialTheme.shapes.small) {
+                            Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text("Sync now")
+                        }
+                    }
                     Text(when (val sync = state.syncState) {
                         SyncState.Idle -> when {
                             state.lastSyncedAt == null -> "Ready to sync"
@@ -73,13 +85,6 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
                         is SyncState.Success -> "Catalog is up to date"
                         is SyncState.Failed -> "Couldn't refresh: ${sync.message}"
                     }, style = MaterialTheme.typography.bodySmall, color = LocalAppPalette.current.textSecondary)
-                    Button(onClick = viewModel::refresh,
-                        enabled = canSync && state.syncState !is SyncState.Running,
-                        shape = MaterialTheme.shapes.small) {
-                        Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(6.dp))
-                        Text("Sync now")
-                    }
                     Text(
                         if (!canSync && state.syncState !is SyncState.Running) {
                             "Next refresh available in $remainingMinutes min."
@@ -94,13 +99,30 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
                 SectionHeader("About")
                 Column(Modifier.padding(horizontal = Dimens.lg), verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
                     Text("ModeLLM $version", style = MonoStyle)
-                    Text("Model data and provider logos come from models.dev.", style = MaterialTheme.typography.bodyMedium)
-                    ExternalLink("Data from models.dev", "https://models.dev")
-                    ExternalLink("models.dev on GitHub", "https://github.com/anomalyco/models.dev")
-                    Text("Rubik and IBM Plex Mono are licensed under the SIL Open Font License (OFL).", style = MaterialTheme.typography.bodySmall,
-                        color = LocalAppPalette.current.textSecondary)
-                    ExternalLink("Rubik font license", "https://github.com/google/fonts/blob/main/ofl/rubik/OFL.txt")
-                    ExternalLink("IBM Plex Mono font license", "https://github.com/google/fonts/blob/main/ofl/ibmplexmono/OFL.txt")
+                    val linkColor = LocalAppPalette.current.brandText
+                    Text(buildAnnotatedString {
+                        append("Model data and provider logos come from ")
+                        withLink(LinkAnnotation.Url("https://models.dev", TextLinkStyles(
+                            style = SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline),
+                        ))) {
+                            append("models.dev")
+                        }
+                        append(".")
+                    }, style = MaterialTheme.typography.bodyMedium)
+                    Text(buildAnnotatedString {
+                        withLink(LinkAnnotation.Url("https://github.com/google/fonts/blob/main/ofl/rubik/OFL.txt", TextLinkStyles(
+                            style = SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline),
+                        ))) {
+                            append("Rubik")
+                        }
+                        append(" and ")
+                        withLink(LinkAnnotation.Url("https://github.com/google/fonts/blob/main/ofl/ibmplexmono/OFL.txt", TextLinkStyles(
+                            style = SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline),
+                        ))) {
+                            append("IBM Plex Mono")
+                        }
+                        append(" are licensed under the SIL Open Font License (OFL).")
+                    }, style = MaterialTheme.typography.bodySmall, color = LocalAppPalette.current.textSecondary)
                 }
             }
         }

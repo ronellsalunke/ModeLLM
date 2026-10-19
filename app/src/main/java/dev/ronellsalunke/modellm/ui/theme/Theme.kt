@@ -3,7 +3,12 @@ package dev.ronellsalunke.modellm.ui.theme
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialExpressiveTheme
+import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -13,6 +18,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -99,10 +105,12 @@ private val DarkColorScheme = darkColorScheme(
     surfaceContainerHighest = Color(0xFF2A2A2A),
 )
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ModeLLMTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = false,
+    animateThemeChanges: Boolean = true,
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
@@ -129,13 +137,17 @@ fun ModeLLMTheme(
         if (darkTheme) DarkAppPalette else LightAppPalette
     }
 
+    val animatedScheme = animatedColorScheme(colorScheme, animateThemeChanges)
+    val animatedAppPalette = animatedPalette(palette, animateThemeChanges)
+    // Black and white system icons have equal contrast at this luminance.
+    val useDarkSystemIcons = animatedScheme.background.luminance() > 0.179f
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as? Activity)?.window ?: return@SideEffect
             WindowCompat.getInsetsController(window, view).apply {
-                isAppearanceLightStatusBars = !darkTheme
-                isAppearanceLightNavigationBars = !darkTheme
+                isAppearanceLightStatusBars = useDarkSystemIcons
+                isAppearanceLightNavigationBars = useDarkSystemIcons
             }
             @Suppress("DEPRECATION")
             when {
@@ -145,9 +157,10 @@ fun ModeLLMTheme(
                 }
 
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> {
-                    window.navigationBarColor = colorScheme.background.toArgb()
+                    window.navigationBarColor = animatedScheme.background.toArgb()
                 }
 
+                // API 24–25 only supports light navigation icons, so keep the bar dark.
                 else -> {
                     window.navigationBarColor = DarkBackground.toArgb()
                 }
@@ -156,14 +169,82 @@ fun ModeLLMTheme(
     }
 
     CompositionLocalProvider(
-        LocalAppPalette provides palette,
+        LocalAppPalette provides animatedAppPalette,
         LocalMaterialYouEnabled provides useDynamicColor,
     ) {
-        MaterialTheme(
-            colorScheme = colorScheme,
+        MaterialExpressiveTheme(
+            colorScheme = animatedScheme,
+            motionScheme = MotionScheme.expressive(),
             typography = Typography,
             shapes = ModelsDevShapes,
             content = content,
         )
     }
 }
+
+@Composable
+private fun animatedColor(target: Color, animate: Boolean): Color =
+    if (animate) animateColorAsState(target, animationSpec = tween(300), label = "themeColor").value else target
+
+@Composable
+private fun animatedPalette(target: AppPalette, animate: Boolean): AppPalette = target.copy(
+    brand = animatedColor(target.brand, animate),
+    brandText = animatedColor(target.brandText, animate),
+    background = animatedColor(target.background, animate),
+    surface = animatedColor(target.surface, animate),
+    border = animatedColor(target.border, animate),
+    textSecondary = animatedColor(target.textSecondary, animate),
+    textTertiary = animatedColor(target.textTertiary, animate),
+)
+
+@Composable
+private fun animatedColorScheme(target: ColorScheme, animate: Boolean): ColorScheme = target.copy(
+    primary = animatedColor(target.primary, animate),
+    onPrimary = animatedColor(target.onPrimary, animate),
+    primaryContainer = animatedColor(target.primaryContainer, animate),
+    onPrimaryContainer = animatedColor(target.onPrimaryContainer, animate),
+    inversePrimary = animatedColor(target.inversePrimary, animate),
+    secondary = animatedColor(target.secondary, animate),
+    onSecondary = animatedColor(target.onSecondary, animate),
+    secondaryContainer = animatedColor(target.secondaryContainer, animate),
+    onSecondaryContainer = animatedColor(target.onSecondaryContainer, animate),
+    tertiary = animatedColor(target.tertiary, animate),
+    onTertiary = animatedColor(target.onTertiary, animate),
+    tertiaryContainer = animatedColor(target.tertiaryContainer, animate),
+    onTertiaryContainer = animatedColor(target.onTertiaryContainer, animate),
+    background = animatedColor(target.background, animate),
+    onBackground = animatedColor(target.onBackground, animate),
+    surface = animatedColor(target.surface, animate),
+    onSurface = animatedColor(target.onSurface, animate),
+    surfaceVariant = animatedColor(target.surfaceVariant, animate),
+    onSurfaceVariant = animatedColor(target.onSurfaceVariant, animate),
+    surfaceTint = animatedColor(target.surfaceTint, animate),
+    inverseSurface = animatedColor(target.inverseSurface, animate),
+    inverseOnSurface = animatedColor(target.inverseOnSurface, animate),
+    error = animatedColor(target.error, animate),
+    onError = animatedColor(target.onError, animate),
+    errorContainer = animatedColor(target.errorContainer, animate),
+    onErrorContainer = animatedColor(target.onErrorContainer, animate),
+    outline = animatedColor(target.outline, animate),
+    outlineVariant = animatedColor(target.outlineVariant, animate),
+    scrim = animatedColor(target.scrim, animate),
+    surfaceBright = animatedColor(target.surfaceBright, animate),
+    surfaceDim = animatedColor(target.surfaceDim, animate),
+    surfaceContainerLowest = animatedColor(target.surfaceContainerLowest, animate),
+    surfaceContainerLow = animatedColor(target.surfaceContainerLow, animate),
+    surfaceContainer = animatedColor(target.surfaceContainer, animate),
+    surfaceContainerHigh = animatedColor(target.surfaceContainerHigh, animate),
+    surfaceContainerHighest = animatedColor(target.surfaceContainerHighest, animate),
+    primaryFixed = animatedColor(target.primaryFixed, animate),
+    primaryFixedDim = animatedColor(target.primaryFixedDim, animate),
+    onPrimaryFixed = animatedColor(target.onPrimaryFixed, animate),
+    onPrimaryFixedVariant = animatedColor(target.onPrimaryFixedVariant, animate),
+    secondaryFixed = animatedColor(target.secondaryFixed, animate),
+    secondaryFixedDim = animatedColor(target.secondaryFixedDim, animate),
+    onSecondaryFixed = animatedColor(target.onSecondaryFixed, animate),
+    onSecondaryFixedVariant = animatedColor(target.onSecondaryFixedVariant, animate),
+    tertiaryFixed = animatedColor(target.tertiaryFixed, animate),
+    tertiaryFixedDim = animatedColor(target.tertiaryFixedDim, animate),
+    onTertiaryFixed = animatedColor(target.onTertiaryFixed, animate),
+    onTertiaryFixedVariant = animatedColor(target.onTertiaryFixedVariant, animate),
+)

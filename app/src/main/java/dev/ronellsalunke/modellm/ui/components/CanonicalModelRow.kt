@@ -10,7 +10,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import dev.ronellsalunke.modellm.data.model.*
 import dev.ronellsalunke.modellm.ui.theme.*
 import dev.ronellsalunke.modellm.ui.util.*
@@ -50,27 +49,13 @@ fun ModelIcons(modalities: List<Modality>, capabilities: List<Capability>, openW
 
 @Composable
 fun CanonicalModelRow(model: CanonicalModel, onClick: () -> Unit) {
-    Column(Modifier.fillMaxWidth().heightIn(min = 110.dp).clickable(onClick = onClick)
+    Column(Modifier.fillMaxWidth().heightIn(min = 64.dp).clickable(onClick = onClick)
         .padding(horizontal = Dimens.lg, vertical = Dimens.sm), verticalArrangement = Arrangement.spacedBy(3.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
             LabLogo(model.labId, model.labName, 20.dp)
             Text(model.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         Text(model.id, style = MonoLabelStyle, color = LocalAppPalette.current.textTertiary, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Text(listOfNotNull(model.labName, pluralized(model.providerCount, "provider"), model.family).joinToString(" · "),
-            style = MaterialTheme.typography.labelSmall, color = LocalAppPalette.current.textSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        val pricing = if (model.minInputCost != null || model.minOutputCost != null) {
-            " · from ${compactPricePair(model.minInputCost, model.minOutputCost)} /1M"
-        } else ""
-        Text("${tokenLimit(model.limits.context)} ctx · ${tokenLimit(model.limits.output)} out$pricing",
-            style = MonoLabelStyle, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-            Box(Modifier.weight(1f)) { ModelIcons(model.inputModalities, model.capabilities(), model.openWeights) }
-            Column {
-                model.releaseDate?.let { Text("Rel $it", style = MonoLabelStyle.copy(fontSize = 10.sp, lineHeight = 12.sp), color = LocalAppPalette.current.textTertiary) }
-                model.lastUpdated?.let { Text("Upd $it", style = MonoLabelStyle.copy(fontSize = 10.sp, lineHeight = 12.sp), color = LocalAppPalette.current.textTertiary) }
-            }
-        }
     }
     CatalogDivider()
 }

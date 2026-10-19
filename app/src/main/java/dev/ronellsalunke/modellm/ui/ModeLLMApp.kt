@@ -1,5 +1,6 @@
 package dev.ronellsalunke.modellm.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.pager.HorizontalPager
@@ -10,11 +11,14 @@ import androidx.compose.material.icons.filled.Science
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.compose.*
 import androidx.navigation.toRoute
-import dev.ronellsalunke.modellm.ui.components.CatalogDivider
+import dev.ronellsalunke.modellm.ui.components.FloatingTabBar
+import dev.ronellsalunke.modellm.ui.components.FloatingTabItem
 import dev.ronellsalunke.modellm.ui.models.*
 import dev.ronellsalunke.modellm.ui.navigation.*
 import dev.ronellsalunke.modellm.ui.providers.*
@@ -22,8 +26,14 @@ import dev.ronellsalunke.modellm.ui.labs.*
 import kotlinx.coroutines.launch
 import dev.ronellsalunke.modellm.ui.settings.SettingsScreen
 import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
-import dev.ronellsalunke.modellm.ui.theme.LocalMaterialYouEnabled
 
+private val TabItems = listOf(
+    FloatingTabItem("Models", Icons.AutoMirrored.Filled.List),
+    FloatingTabItem("Providers", Icons.Default.Storage),
+    FloatingTabItem("Labs", Icons.Default.Science),
+)
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ModeLLMApp() {
     val navController = rememberNavController()
@@ -34,27 +44,25 @@ fun ModeLLMApp() {
     ) { innerPadding ->
         NavHost(navController, startDestination = TabsRoute, modifier = Modifier.padding(innerPadding)) {
             composable<TabsRoute> {
+                val backStackEntry by navController.currentBackStackEntryAsState()
+                val onTabs = backStackEntry?.destination?.hasRoute<TabsRoute>() == true
+                BackHandler(enabled = onTabs && pagerState.currentPage != 0) {
+                    scope.launch { pagerState.animateScrollToPage(0) }
+                }
                 val palette = LocalAppPalette.current
-                val materialYou = LocalMaterialYouEnabled.current
-                val navItemColors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = if (materialYou) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.onPrimary
-                    },
-                    selectedTextColor = MaterialTheme.colorScheme.onSurface,
-                    indicatorColor = if (materialYou) {
-                        MaterialTheme.colorScheme.primaryContainer
-                    } else {
-                        palette.brand
-                    },
-                    unselectedIconColor = palette.textSecondary,
-                    unselectedTextColor = palette.textSecondary,
-                )
-                Column(Modifier.fillMaxSize().background(palette.background)) {
+                Box(Modifier.fillMaxSize().background(palette.background)) {
+                    FloatingTabBar(
+                        items = TabItems,
+                        selectedIndex = pagerState.targetPage,
+                        onSelect = { page -> scope.launch { pagerState.animateScrollToPage(page) } },
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .offset(y = -FloatingToolbarDefaults.ScreenOffset)
+                            .zIndex(1f),
+                    )
                     HorizontalPager(
                         pagerState,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxSize(),
                         beyondViewportPageCount = 2,
                         key = { it },
                     ) { page ->
@@ -63,34 +71,6 @@ fun ModeLLMApp() {
                             1 -> ProvidersListScreen(onProviderClick = { navController.navigate(ProviderDetailRoute(it)) })
                             2 -> LabsScreen(onLabClick = { navController.navigate(LabDetailRoute(it)) })
                         }
-                    }
-                    CatalogDivider()
-                    NavigationBar(
-                        containerColor = palette.background,
-                        tonalElevation = 0.dp,
-                        windowInsets = WindowInsets(0, 0, 0, 0),
-                    ) {
-                        NavigationBarItem(
-                            selected = pagerState.currentPage == 0,
-                            onClick = { scope.launch { pagerState.animateScrollToPage(0) } },
-                            icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = null) },
-                            label = { Text("Models") },
-                            colors = navItemColors,
-                        )
-                        NavigationBarItem(
-                            selected = pagerState.currentPage == 1,
-                            onClick = { scope.launch { pagerState.animateScrollToPage(1) } },
-                            icon = { Icon(Icons.Default.Storage, contentDescription = null) },
-                            label = { Text("Providers") },
-                            colors = navItemColors,
-                        )
-                        NavigationBarItem(
-                            selected = pagerState.currentPage == 2,
-                            onClick = { scope.launch { pagerState.animateScrollToPage(2) } },
-                            icon = { Icon(Icons.Default.Science, contentDescription = null) },
-                            label = { Text("Labs") },
-                            colors = navItemColors,
-                        )
                     }
                 }
             }

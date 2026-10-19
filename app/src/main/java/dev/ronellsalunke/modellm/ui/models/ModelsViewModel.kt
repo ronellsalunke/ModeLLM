@@ -52,6 +52,7 @@ class ModelsViewModel(
 
     fun setQuery(value: String) { query.value = value }
     fun setFilters(value: ModelFilters) { filters.value = value }
+    fun updateFilters(transform: (ModelFilters) -> ModelFilters) { filters.update(transform) }
     fun setSort(value: ModelSort) { sort.value = value }
     fun clearFilters() {
         filters.value = ModelFilters()

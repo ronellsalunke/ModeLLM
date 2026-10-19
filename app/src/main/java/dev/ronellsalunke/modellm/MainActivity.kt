@@ -25,7 +25,8 @@ class MainActivity : ComponentActivity() {
                 ThemeMode.Light -> false
                 ThemeMode.Dark -> true
             }
-            ModeLLMTheme(darkTheme = darkTheme, dynamicColor = state.settings.dynamicColor) { ModeLLMApp() }
+            ModeLLMTheme(darkTheme = darkTheme, dynamicColor = state.settings.dynamicColor,
+                animateThemeChanges = state.settingsLoaded) { ModeLLMApp() }
         }
     }
 }

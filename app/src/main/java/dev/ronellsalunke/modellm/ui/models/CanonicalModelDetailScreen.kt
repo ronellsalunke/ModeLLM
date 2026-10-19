@@ -8,7 +8,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
 import android.content.ClipData
@@ -41,10 +43,10 @@ fun CanonicalModelDetailScreen(canonicalId: String, onBack: () -> Unit, onProvid
                 Column(Modifier.padding(Dimens.lg), verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
                     Text(model.name, style = MaterialTheme.typography.headlineLarge)
                     model.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
-                    Row {
-                        Text(model.id, style = MonoStyle, modifier = Modifier.weight(1f))
-                        IconButton(onClick = { scope.launch { clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("Canonical model ID", model.id))) } }) {
-                            Icon(Icons.Default.ContentCopy, "Copy canonical model ID")
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically) {
+                        Text(model.id, style = MonoStyle, modifier = Modifier.weight(1f, fill = false))
+                        IconButton(onClick = { scope.launch { clipboard.setClipEntry(ClipEntry(ClipData.newPlainText("Canonical model ID", model.id))) } }, modifier = Modifier.size(48.dp)) {
+                            Icon(Icons.Default.ContentCopy, "Copy canonical model ID", modifier = Modifier.size(16.dp))
                         }
                     }
                 }

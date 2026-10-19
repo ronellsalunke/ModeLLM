@@ -7,7 +7,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -19,7 +18,6 @@ import dev.ronellsalunke.modellm.data.repository.SyncState
 import dev.ronellsalunke.modellm.ui.components.*
 import dev.ronellsalunke.modellm.ui.theme.*
 import dev.ronellsalunke.modellm.ui.util.groupedNumber
-import dev.ronellsalunke.modellm.ui.util.pluralized
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,11 +29,11 @@ fun ProvidersListScreen(onProviderClick: (String) -> Unit, viewModel: ProvidersV
         state.providers.filter { it.name.contains(query, true) || it.id.contains(query, true) }
     }
     Column(Modifier.fillMaxSize()) {
-        AppHeader("PROVIDERS", pluralized(state.providers.size, "provider"))
+        AppHeader("PROVIDERS")
         SearchField(query, { query = it }, "Search providers", Modifier.fillMaxWidth().padding(Dimens.sm))
         SyncBanner(state.lastSyncedAt, state.syncState, viewModel::refresh)
-        PullToRefreshBox(isRefreshing = state.syncState is SyncState.Running, onRefresh = viewModel::refresh, modifier = Modifier.weight(1f)) {
-            LazyColumn(Modifier.fillMaxSize()) {
+        AppPullToRefreshBox(isRefreshing = state.syncState is SyncState.Running, onRefresh = viewModel::refresh, modifier = Modifier.weight(1f)) {
+            LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = FloatingTabBarClearance)) {
                 if (providers.isEmpty()) item {
                     val failure = state.syncState as? SyncState.Failed
                     when {

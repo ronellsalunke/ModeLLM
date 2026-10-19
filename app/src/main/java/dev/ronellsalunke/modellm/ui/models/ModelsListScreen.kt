@@ -11,7 +11,6 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material.icons.filled.Settings
@@ -25,7 +24,6 @@ import dev.ronellsalunke.modellm.data.repository.SyncState
 import dev.ronellsalunke.modellm.ui.components.*
 import dev.ronellsalunke.modellm.ui.theme.Dimens
 import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
-import dev.ronellsalunke.modellm.ui.util.pluralized
 import org.koin.androidx.compose.koinViewModel
 
 private fun ModelSort.label(): String = when (this) {
@@ -47,7 +45,7 @@ fun ModelsListScreen(onModelClick: (CanonicalModel) -> Unit, onSettings: () -> U
     val keyboardController = LocalSoftwareKeyboardController.current
     val activeFilters = remember(state.filters, state.providers, state.labs) { state.filters.activeFilters(state.providers, state.labs) }
     Column(Modifier.fillMaxSize()) {
-        AppHeader("MODELLM", state.models?.let { pluralized(it.size, "model") } ?: "The model catalog") {
+        AppHeader("MODELLM") {
             IconButton(onClick = onSettings) { Icon(Icons.Default.Settings, "Settings") }
         }
         Row(Modifier.fillMaxWidth().padding(Dimens.sm), horizontalArrangement = Arrangement.spacedBy(Dimens.xs)) {
@@ -84,8 +82,8 @@ fun ModelsListScreen(onModelClick: (CanonicalModel) -> Unit, onSettings: () -> U
             }
         }
         SyncBanner(state.lastSyncedAt, state.syncState, viewModel::refresh)
-        PullToRefreshBox(isRefreshing = state.syncState is SyncState.Running, onRefresh = viewModel::refresh, modifier = Modifier.weight(1f)) {
-            LazyColumn(Modifier.fillMaxSize()) {
+        AppPullToRefreshBox(isRefreshing = state.syncState is SyncState.Running, onRefresh = viewModel::refresh, modifier = Modifier.weight(1f)) {
+            LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = FloatingTabBarClearance)) {
                 if (state.models.isNullOrEmpty()) item {
                     when {
                         state.models == null -> EmptyState("Loading models…")
@@ -106,7 +104,6 @@ fun ModelsListScreen(onModelClick: (CanonicalModel) -> Unit, onSettings: () -> U
             }
         }
     }
-    if (filterSheet) ModelFiltersSheet(state.filters, state.providers, state.labs, onDismiss = { filterSheet = false }, onApply = {
-        viewModel.setFilters(it); filterSheet = false
-    })
+    if (filterSheet) ModelFiltersSheet(state.filters, state.providers, state.labs,
+        onDismiss = { filterSheet = false }, onUpdateFilters = viewModel::updateFilters)
 }
