@@ -80,7 +80,8 @@ fun LabDetailScreen(labId: String, onBack: () -> Unit, onModelClick: (String) ->
                     Text(lab.id, style = MonoStyle, color = LocalAppPalette.current.textTertiary)
                     lab.description?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
                 }
-                FactGrid(listOf(Fact("Models", lab.modelCount.toString(), true), Fact("Providers", lab.providerCount.toString(), true), Fact("Updated", lab.lastUpdated)))
+                FactGrid(listOf(Fact("Models", lab.modelCount.toString(), true), Fact("Providers", lab.providerCount.toString(), true), Fact("Updated", lab.lastUpdated)),
+                    compactColumns = 2)
                 SectionHeader("Models (${lab.modelCount})")
                 if (state.models.isEmpty()) EmptyState("No models listed")
             }

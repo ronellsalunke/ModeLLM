@@ -35,6 +35,7 @@ fun ProviderDetailScreen(providerId: String, onBack: () -> Unit, onModelClick: (
             }
         } else LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = Dimens.xl)) {
             item {
+                Spacer(Modifier.height(Dimens.lg))
                 ProviderFacts(provider, showIdentity = false)
                 CatalogDivider()
                 SectionHeader("Models (${provider.modelCount})")

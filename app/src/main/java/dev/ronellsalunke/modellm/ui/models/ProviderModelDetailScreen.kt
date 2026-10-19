@@ -37,11 +37,13 @@ fun ProviderModelDetailScreen(providerId: String, modelId: String, onBack: () ->
             val facts = remember(model) {
                 listOf(
                     Fact("Provider", model.providerName), Fact("Family", model.family),
-                    Fact("Context", tokenLimit(model.limits.context)), Fact("Max input", tokenLimit(model.limits.input)),
-                    Fact("Max output", tokenLimit(model.limits.output)), Fact("Knowledge", model.knowledge),
-                    Fact("Release", model.releaseDate), Fact("Updated", model.lastUpdated),
-                    Fact("Weights", if (model.openWeights) "Open weights" else "Closed weights"),
-                    Fact("Type", model.modelType), Fact("Canonical ID", model.canonicalModelId, mono = true, fullWidth = true),
+                    Fact("Context", tokenLimit(model.limits.context), newRow = true),
+                    Fact("Max input", tokenLimit(model.limits.input), newRow = true), Fact("Max output", tokenLimit(model.limits.output)),
+                    Fact("Knowledge", model.knowledge, newRow = true),
+                    Fact("Release", model.releaseDate, newRow = true), Fact("Updated", model.lastUpdated),
+                    Fact("Weights", if (model.openWeights) "Open weights" else "Closed weights", newRow = true),
+                    Fact("Type", model.modelType, newRow = true),
+                    Fact("Canonical ID", model.canonicalModelId, mono = true, fullWidth = true),
                 ) + listOfNotNull(model.providerNpm?.let { Fact("Model npm", it, mono = true, fullWidth = true) },
                     if (model.supportsInterleaved) Fact("Interleaved reasoning", "Supported", fullWidth = true) else null)
             }
@@ -60,7 +62,7 @@ fun ProviderModelDetailScreen(providerId: String, modelId: String, onBack: () ->
                         if (model.experimental) StatusChip("Experimental")
                         model.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
                     }
-                    FactGrid(facts)
+                    FactGrid(facts, compactColumns = 2)
                     SectionHeader("Modalities")
                     Column(Modifier.padding(horizontal = Dimens.lg), verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
                         Text("Input", style = MonoLabelStyle)

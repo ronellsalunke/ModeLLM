@@ -203,7 +203,7 @@ private fun CapabilityIcon(icon: ImageVector, label: String) {
     }
 }
 
-data class Fact(val label: String, val value: String?, val mono: Boolean = false, val fullWidth: Boolean = false)
+data class Fact(val label: String, val value: String?, val mono: Boolean = false, val fullWidth: Boolean = false, val newRow: Boolean = false)
 
 @Composable
 fun FactCell(label: String, value: String?, modifier: Modifier = Modifier, mono: Boolean = false) {
@@ -214,14 +214,20 @@ fun FactCell(label: String, value: String?, modifier: Modifier = Modifier, mono:
 }
 
 @Composable
-fun FactGrid(facts: List<Fact>) {
+fun FactGrid(facts: List<Fact>, compactColumns: Int = 1) {
     BoxWithConstraints(Modifier.fillMaxWidth().padding(horizontal = Dimens.lg)) {
-        val columns = when { maxWidth < 480.dp -> 1; maxWidth >= 600.dp -> 3; else -> 2 }
+        val columns = when {
+            maxWidth < 480.dp -> compactColumns.coerceAtLeast(1)
+            maxWidth >= 600.dp -> 3
+            else -> 2
+        }
         val rows = buildList<List<Fact>> {
             var row = mutableListOf<Fact>()
             facts.forEach { fact ->
-                if (fact.fullWidth) {
+                if (fact.fullWidth || fact.newRow) {
                     if (row.isNotEmpty()) { add(row); row = mutableListOf() }
+                }
+                if (fact.fullWidth) {
                     add(listOf(fact))
                 } else {
                     row.add(fact)
@@ -234,12 +240,9 @@ fun FactGrid(facts: List<Fact>) {
             rows.forEachIndexed { index, row ->
                 if (index > 0) CatalogDivider()
                 Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
-                    val count = if (row.first().fullWidth) 1 else columns
-                    repeat(count) { column ->
+                    row.forEachIndexed { column, fact ->
                         if (column > 0) VerticalDivider(color = LocalAppPalette.current.border)
-                        val fact = row.getOrNull(column)
-                        if (fact != null) FactCell(fact.label, fact.value, Modifier.weight(1f), fact.mono)
-                        else Spacer(Modifier.weight(1f))
+                        FactCell(fact.label, fact.value, Modifier.weight(1f), fact.mono)
                     }
                 }
             }
@@ -348,7 +351,8 @@ fun ProviderFacts(provider: Provider, showIdentity: Boolean = true) {
     }
     FactGrid(listOf(Fact("Models", groupedNumber(provider.modelCount)),
         Fact("Provider ID", provider.id, mono = true),
-        Fact("npm", provider.npm, mono = true, fullWidth = true), Fact("API", provider.api, mono = true, fullWidth = true)))
+        Fact("npm", provider.npm, mono = true, fullWidth = true), Fact("API", provider.api, mono = true, fullWidth = true)),
+        compactColumns = 2)
     SectionHeader("Environment keys")
     Text(provider.env.takeIf { it.isNotEmpty() }?.joinToString("\n") ?: "–", style = MonoStyle,
         modifier = Modifier.padding(horizontal = Dimens.lg))

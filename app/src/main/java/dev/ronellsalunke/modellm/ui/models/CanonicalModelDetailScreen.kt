@@ -54,14 +54,17 @@ fun CanonicalModelDetailScreen(canonicalId: String, onBack: () -> Unit, onProvid
                     }
                 }
                 FactGrid(listOf(
-                    Fact("Lab", model.labName), Fact("Family", model.family), Fact("Providers", model.providerCount.toString(), mono = true),
-                    Fact("Context", tokenLimit(model.limits.context), mono = true), Fact("Output limit", tokenLimit(model.limits.output), mono = true),
-                    Fact("Knowledge", model.knowledge), Fact("Release", model.releaseDate), Fact("Updated", model.lastUpdated),
-                    Fact("Weights", if (model.openWeights) "Open weights" else "Closed weights"),
-                    Fact("Input modalities", model.inputModalities.joinToString { modalityLabel(it) }.ifEmpty { "–" }),
-                    Fact("Output modalities", model.outputModalities.joinToString { modalityLabel(it) }.ifEmpty { "–" }),
-                    Fact("Capabilities", model.capabilities().joinToString { capabilityLabel(it) }.ifEmpty { "None listed" }),
-                ))
+                    Fact("Lab", model.labName),
+                    Fact("Family", model.family, newRow = true), Fact("Providers", model.providerCount.toString(), mono = true),
+                    Fact("Context", tokenLimit(model.limits.context), mono = true, newRow = true),
+                    Fact("Output limit", tokenLimit(model.limits.output), mono = true),
+                    Fact("Knowledge", model.knowledge, newRow = true),
+                    Fact("Release", model.releaseDate, newRow = true), Fact("Updated", model.lastUpdated),
+                    Fact("Weights", if (model.openWeights) "Open weights" else "Closed weights", newRow = true),
+                    Fact("Input modalities", model.inputModalities.joinToString { modalityLabel(it) }.ifEmpty { "–" }, newRow = true),
+                    Fact("Output modalities", model.outputModalities.joinToString { modalityLabel(it) }.ifEmpty { "–" }, newRow = true),
+                    Fact("Capabilities", model.capabilities().joinToString { capabilityLabel(it) }.ifEmpty { "None listed" }, newRow = true),
+                ), compactColumns = 2)
                 SectionHeader("Providers (${model.providerCount})")
                 if (state.providers.isEmpty()) EmptyState("No providers listed")
             }
