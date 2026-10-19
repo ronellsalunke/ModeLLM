@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.ClipEntry
 import androidx.compose.ui.platform.LocalClipboard
@@ -23,6 +24,7 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CanonicalModelDetailScreen(canonicalId: String, onBack: () -> Unit, onProviderClick: (String) -> Unit) {
     val viewModel = koinViewModel<CanonicalModelDetailViewModel>(key = canonicalId, parameters = { parametersOf(canonicalId) })
@@ -30,18 +32,19 @@ fun CanonicalModelDetailScreen(canonicalId: String, onBack: () -> Unit, onProvid
     val model = state.model
     val clipboard = LocalClipboard.current
     val scope = rememberCoroutineScope()
-    Column(Modifier.fillMaxSize().background(LocalAppPalette.current.background)) {
-        BackHeader("Models / ${model?.labName ?: canonicalId.substringBefore('/')}", onBack)
+    val scrollBehavior = rememberDetailScrollBehavior()
+    Column(Modifier.fillMaxSize().background(LocalAppPalette.current.background).nestedScroll(scrollBehavior.nestedScrollConnection)) {
+        DetailTopAppBar(title = model?.name ?: "Model", onBack = onBack, scrollBehavior = scrollBehavior)
+        CatalogDivider()
         if (model == null) {
             when {
                 state.loading -> EmptyState("Loading model…")
                 state.syncState is SyncState.Failed -> ErrorState((state.syncState as SyncState.Failed).message, viewModel::refresh)
                 else -> EmptyState("Model not found", "This model is not in the saved catalog.")
             }
-        } else LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = Dimens.xl)) {
+        } else LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = Dimens.xl)) {
             item {
                 Column(Modifier.padding(Dimens.lg), verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-                    Text(model.name, style = MaterialTheme.typography.headlineLarge)
                     model.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically) {
                         Text(model.id, style = MonoStyle, modifier = Modifier.weight(1f, fill = false))

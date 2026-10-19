@@ -12,7 +12,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -29,7 +28,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.style.TextDecoration
@@ -80,33 +78,6 @@ private fun CatalogLogo(url: String, name: String, size: Dp) {
 
 @Composable
 fun CatalogDivider() = HorizontalDivider(thickness = Dimens.hairline, color = LocalAppPalette.current.border)
-
-@Composable
-fun AppHeader(title: String, actions: @Composable RowScope.() -> Unit = {}) {
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = Dimens.headerHeight).padding(horizontal = Dimens.lg),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Dimens.md),
-    ) {
-        Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-        Spacer(Modifier.weight(1f))
-        actions()
-    }
-    CatalogDivider()
-}
-
-@Composable
-fun BackHeader(breadcrumb: String, onBack: () -> Unit) {
-    Row(Modifier.fillMaxWidth().heightIn(min = Dimens.headerHeight), verticalAlignment = Alignment.CenterVertically) {
-        IconButton(onClick = onBack, modifier = Modifier.size(48.dp)) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-        }
-        Text(breadcrumb, style = MaterialTheme.typography.bodyMedium,
-            color = LocalAppPalette.current.textSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f).padding(end = Dimens.lg))
-    }
-    CatalogDivider()
-}
 
 @Composable
 fun SearchField(query: String, onQueryChange: (String) -> Unit, label: String, modifier: Modifier = Modifier) {
@@ -369,8 +340,8 @@ fun ExternalLink(label: String, url: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ProviderFacts(provider: Provider) {
-    Row(Modifier.padding(horizontal = Dimens.lg, vertical = Dimens.sm),
+fun ProviderFacts(provider: Provider, showIdentity: Boolean = true) {
+    if (showIdentity) Row(Modifier.padding(horizontal = Dimens.lg, vertical = Dimens.sm),
         horizontalArrangement = Arrangement.spacedBy(Dimens.sm), verticalAlignment = Alignment.CenterVertically) {
         ProviderLogo(provider.id, provider.name)
         Text(provider.name, style = MaterialTheme.typography.titleMedium)

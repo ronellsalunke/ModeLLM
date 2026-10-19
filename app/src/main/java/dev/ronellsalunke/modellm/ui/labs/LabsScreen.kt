@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.ronellsalunke.modellm.data.repository.SyncState
 import dev.ronellsalunke.modellm.ui.components.*
@@ -27,7 +28,8 @@ fun LabsScreen(onLabClick: (String) -> Unit, viewModel: LabsViewModel = koinView
         state.labs.orEmpty().filter { query.isBlank() || it.name.contains(query, true) || it.id.contains(query, true) }
     }
     Column(Modifier.fillMaxSize().background(LocalAppPalette.current.background)) {
-        AppHeader("LABS")
+        HomeTopAppBar(title = "Labs")
+        CatalogDivider()
         SearchField(query, { query = it }, "Search labs", Modifier.fillMaxWidth().padding(Dimens.sm))
         SyncBanner(state.lastSyncedAt, state.syncState, viewModel::refresh)
         AppPullToRefreshBox(state.syncState is SyncState.Running, viewModel::refresh, Modifier.weight(1f)) {
@@ -56,26 +58,25 @@ fun LabsScreen(onLabClick: (String) -> Unit, viewModel: LabsViewModel = koinView
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LabDetailScreen(labId: String, onBack: () -> Unit, onModelClick: (String) -> Unit) {
     val viewModel = koinViewModel<LabDetailViewModel>(key = labId, parameters = { parametersOf(labId) })
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val lab = state.lab
-    Column(Modifier.fillMaxSize().background(LocalAppPalette.current.background)) {
-        BackHeader("Labs / ${lab?.name ?: labId}", onBack)
+    val scrollBehavior = rememberDetailScrollBehavior()
+    Column(Modifier.fillMaxSize().background(LocalAppPalette.current.background).nestedScroll(scrollBehavior.nestedScrollConnection)) {
+        DetailTopAppBar(title = lab?.name ?: labId, onBack = onBack, scrollBehavior = scrollBehavior)
+        CatalogDivider()
         if (lab == null) {
             when {
                 state.loading -> EmptyState("Loading lab…")
                 state.syncState is SyncState.Failed -> ErrorState((state.syncState as SyncState.Failed).message, viewModel::refresh)
                 else -> EmptyState("Lab not found")
             }
-        } else LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = Dimens.xl)) {
+        } else LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = Dimens.xl)) {
             item {
                 Column(Modifier.padding(Dimens.lg), verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-                        LabLogo(lab.id, lab.name)
-                        Text(lab.name, style = MaterialTheme.typography.headlineLarge)
-                    }
                     Text(lab.id, style = MonoStyle, color = LocalAppPalette.current.textTertiary)
                     lab.description?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
                 }

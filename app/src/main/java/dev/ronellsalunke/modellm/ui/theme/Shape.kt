@@ -26,7 +26,6 @@ object Dimens {
     val xl = 24.dp
     val xxl = 32.dp
 
-    val headerHeight = 56.dp
     val listRowMinHeight = 48.dp
     val iconSmall = 16.dp
     val iconMedium = 20.dp

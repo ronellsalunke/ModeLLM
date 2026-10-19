@@ -29,7 +29,8 @@ fun ProvidersListScreen(onProviderClick: (String) -> Unit, viewModel: ProvidersV
         state.providers.filter { it.name.contains(query, true) || it.id.contains(query, true) }
     }
     Column(Modifier.fillMaxSize()) {
-        AppHeader("PROVIDERS")
+        HomeTopAppBar(title = "Providers")
+        CatalogDivider()
         SearchField(query, { query = it }, "Search providers", Modifier.fillMaxWidth().padding(Dimens.sm))
         SyncBanner(state.lastSyncedAt, state.syncState, viewModel::refresh)
         AppPullToRefreshBox(isRefreshing = state.syncState is SyncState.Running, onRefresh = viewModel::refresh, modifier = Modifier.weight(1f)) {

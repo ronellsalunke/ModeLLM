@@ -41,8 +41,9 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
     val remainingMinutes = lastSyncedAt
         ?.let { last -> ((syncIntervalMillis - (now - last)).coerceAtLeast(0) / 60_000L + 1L).coerceAtLeast(1L) }
     Column(Modifier.fillMaxSize().background(LocalAppPalette.current.background)) {
-        BackHeader("Settings", onBack)
-        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = Dimens.xl)) {
+        SmallBackTopAppBar("Settings", onBack)
+        CatalogDivider()
+        LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = Dimens.xl)) {
             item {
                 SectionHeader("Appearance")
                 Column(Modifier.padding(horizontal = Dimens.lg), verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {

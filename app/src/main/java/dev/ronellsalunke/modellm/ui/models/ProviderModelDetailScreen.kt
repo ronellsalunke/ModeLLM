@@ -4,9 +4,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.ronellsalunke.modellm.data.repository.SyncState
 import dev.ronellsalunke.modellm.ui.components.*
@@ -15,13 +17,16 @@ import dev.ronellsalunke.modellm.ui.util.*
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProviderModelDetailScreen(providerId: String, modelId: String, onBack: () -> Unit) {
     val viewModel = koinViewModel<ProviderModelDetailViewModel>(key = "$providerId/$modelId", parameters = { parametersOf(providerId, modelId) })
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val model = state.model
-    Column(Modifier.fillMaxSize().background(LocalAppPalette.current.background)) {
-        BackHeader("Models / ${model?.providerName ?: providerId}", onBack)
+    val scrollBehavior = rememberDetailScrollBehavior()
+    Column(Modifier.fillMaxSize().background(LocalAppPalette.current.background).nestedScroll(scrollBehavior.nestedScrollConnection)) {
+        DetailTopAppBar(title = model?.name ?: "Model", onBack = onBack, scrollBehavior = scrollBehavior)
+        CatalogDivider()
         if (model == null) {
             when {
                 state.loading -> EmptyState("Loading model…")
@@ -47,11 +52,9 @@ fun ProviderModelDetailScreen(providerId: String, modelId: String, onBack: () ->
                     "Audio output" to model.cost.outputAudio)
             }
             val capabilities = remember(model) { model.capabilities() }
-            LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = Dimens.xl)) {
+            LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = Dimens.xl)) {
                 item {
                     Column(Modifier.padding(Dimens.lg), verticalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-                        Text(model.name, style = MaterialTheme.typography.headlineLarge,
-                            color = if (model.status.equals("deprecated", true)) LocalAppPalette.current.textSecondary else androidx.compose.material3.MaterialTheme.colorScheme.onSurface)
                         Text(model.id, style = MonoStyle, color = LocalAppPalette.current.textSecondary)
                         model.status?.let { StatusChip(it) }
                         if (model.experimental) StatusChip("Experimental")
