@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-        android:enableOnBackInvokedCallback="false"
+        android:enableOnBackInvokedCallback="true"
         tools:targetApi="33"
         android:name=".ModeLLMApplication"
         android:allowBackup="true"

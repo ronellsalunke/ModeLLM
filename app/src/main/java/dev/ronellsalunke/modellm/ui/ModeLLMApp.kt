@@ -1,6 +1,5 @@
 package dev.ronellsalunke.modellm.ui
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,10 +15,13 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -28,6 +30,13 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.toRoute
+import androidx.navigationevent.NavigationEvent
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.NavigationEventTransitionState
+import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
+import androidx.navigationevent.compose.rememberNavigationEventState
 import dev.ronellsalunke.modellm.ui.components.FloatingTabBar
 import dev.ronellsalunke.modellm.ui.components.FloatingTabItem
 import dev.ronellsalunke.modellm.ui.labs.LabDetailScreen
@@ -41,6 +50,12 @@ import dev.ronellsalunke.modellm.ui.navigation.ProviderDetailRoute
 import dev.ronellsalunke.modellm.ui.navigation.ProviderModelDetailRoute
 import dev.ronellsalunke.modellm.ui.navigation.SettingsRoute
 import dev.ronellsalunke.modellm.ui.navigation.TabsRoute
+import dev.ronellsalunke.modellm.ui.navigation.pushedEnter
+import dev.ronellsalunke.modellm.ui.navigation.pushedExit
+import dev.ronellsalunke.modellm.ui.navigation.pushedPopEnter
+import dev.ronellsalunke.modellm.ui.navigation.pushedPopExit
+import dev.ronellsalunke.modellm.ui.navigation.pushedPredictivePopEnter
+import dev.ronellsalunke.modellm.ui.navigation.pushedPredictivePopExit
 import dev.ronellsalunke.modellm.ui.providers.ProviderDetailScreen
 import dev.ronellsalunke.modellm.ui.providers.ProvidersListScreen
 import dev.ronellsalunke.modellm.ui.settings.SettingsScreen
@@ -53,6 +68,9 @@ private val TabItems =
         FloatingTabItem("Providers", Icons.Default.Storage),
         FloatingTabItem("Labs", Icons.Default.Science),
     )
+
+private val BackSwipeMaxShift = 24.dp
+private const val BackSwipeMinScale = 0.92f
 
 @Composable
 fun ModeLLMApp() {
@@ -77,6 +95,12 @@ private fun AppNavHost(
         navController = navController,
         startDestination = TabsRoute,
         modifier = modifier,
+        enterTransition = { pushedEnter() },
+        exitTransition = { pushedExit() },
+        popEnterTransition = { pushedPopEnter() },
+        popExitTransition = { pushedPopExit() },
+        predictivePopEnterTransition = { swipeEdge -> pushedPredictivePopEnter(swipeEdge) },
+        predictivePopExitTransition = { swipeEdge -> pushedPredictivePopExit(swipeEdge) },
     ) {
         composable<TabsRoute> {
             TabsScreen(navController = navController)
@@ -126,11 +150,31 @@ private fun TabsScreen(navController: NavHostController) {
     val scope = rememberCoroutineScope()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val onTabs = backStackEntry?.destination?.hasRoute<TabsRoute>() == true
-    BackHandler(enabled = onTabs && pagerState.currentPage != 0) {
-        scope.launch { pagerState.animateScrollToPage(0) }
-    }
+    val tabsDispatcherOwner = rememberNavigationEventDispatcherOwner(enabled = onTabs)
+    val backEventState = rememberNavigationEventState(currentInfo = NavigationEventInfo.None)
     val palette = LocalAppPalette.current
-    Box(Modifier.fillMaxSize().background(palette.background)) {
+    CompositionLocalProvider(LocalNavigationEventDispatcherOwner provides tabsDispatcherOwner) {
+        NavigationBackHandler(
+            state = backEventState,
+            isBackEnabled = pagerState.currentPage != 0,
+            onBackCompleted = { scope.launch { pagerState.animateScrollToPage(0) } },
+        )
+    }
+    Box(
+        Modifier.fillMaxSize()
+            .background(palette.background)
+            .graphicsLayer {
+                val event =
+                    (backEventState.transitionState as? NavigationEventTransitionState.InProgress)
+                        ?.latestEvent
+                val progress = event?.progress ?: 0f
+                val scale = 1f - progress * (1f - BackSwipeMinScale)
+                val direction = if (event?.swipeEdge == NavigationEvent.EDGE_RIGHT) -1f else 1f
+                scaleX = scale
+                scaleY = scale
+                translationX = direction * progress * BackSwipeMaxShift.toPx()
+            },
+    ) {
         FloatingTabBar(
             items = TabItems,
             selectedIndex = pagerState.targetPage,

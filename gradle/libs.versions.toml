@@ -17,6 +17,7 @@ workManager = "2.12.0"
 coroutines = "1.11.0"
 serializationJson = "1.11.0"
 navigation = "2.10.2"
+navigationevent = "1.2.0"
 datastore = "1.2.1"
 coil = "3.6.3"
 detekt = "2.0.0-alpha.6"
@@ -41,6 +42,8 @@ androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-te
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
+androidx-navigationevent = { group = "androidx.navigationevent", name = "navigationevent", version.ref = "navigationevent" }
+androidx-navigationevent-compose = { group = "androidx.navigationevent", name = "navigationevent-compose", version.ref = "navigationevent" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
