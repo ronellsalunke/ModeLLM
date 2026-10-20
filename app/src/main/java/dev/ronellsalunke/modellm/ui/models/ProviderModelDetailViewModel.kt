@@ -24,12 +24,19 @@ class ProviderModelDetailViewModel(
     repository: CatalogRepository,
     private val scheduler: CatalogSyncScheduler,
 ) : ViewModel() {
-    val uiState = combine(
-        repository.observeModel(providerId, modelId),
-        repository.observeProvider(providerId),
-        repository.syncState,
-    ) { model, provider, sync -> ProviderModelDetailUiState(model, provider, false, sync) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProviderModelDetailUiState())
+    val uiState =
+        combine(
+                repository.observeModel(providerId, modelId),
+                repository.observeProvider(providerId),
+                repository.syncState,
+            ) { model, provider, sync ->
+                ProviderModelDetailUiState(model, provider, false, sync)
+            }
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5_000),
+                ProviderModelDetailUiState(),
+            )
 
     fun refresh() = scheduler.syncNow()
 }

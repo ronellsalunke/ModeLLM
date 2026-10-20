@@ -1,10 +1,10 @@
 package dev.ronellsalunke.modellm.di
 
-import dev.ronellsalunke.modellm.ui.models.ProviderModelDetailViewModel
-import dev.ronellsalunke.modellm.ui.models.ModelsViewModel
-import dev.ronellsalunke.modellm.ui.models.CanonicalModelDetailViewModel
-import dev.ronellsalunke.modellm.ui.labs.LabsViewModel
 import dev.ronellsalunke.modellm.ui.labs.LabDetailViewModel
+import dev.ronellsalunke.modellm.ui.labs.LabsViewModel
+import dev.ronellsalunke.modellm.ui.models.CanonicalModelDetailViewModel
+import dev.ronellsalunke.modellm.ui.models.ModelsViewModel
+import dev.ronellsalunke.modellm.ui.models.ProviderModelDetailViewModel
 import dev.ronellsalunke.modellm.ui.providers.ProviderDetailViewModel
 import dev.ronellsalunke.modellm.ui.providers.ProvidersViewModel
 import dev.ronellsalunke.modellm.ui.settings.SettingsViewModel
@@ -18,7 +18,9 @@ val viewModelModule = module {
     viewModel { LabsViewModel(get(), get()) }
     viewModel { (labId: String) -> LabDetailViewModel(labId, get(), get()) }
     viewModel { (canonicalId: String) -> CanonicalModelDetailViewModel(canonicalId, get(), get()) }
-    viewModel { (providerId: String, modelId: String) -> ProviderModelDetailViewModel(providerId, modelId, get(), get()) }
+    viewModel { (providerId: String, modelId: String) ->
+        ProviderModelDetailViewModel(providerId, modelId, get(), get())
+    }
     viewModel { ProvidersViewModel(get(), get()) }
     viewModel { (providerId: String) -> ProviderDetailViewModel(providerId, get(), get()) }
     viewModel { SettingsViewModel(get(), get(), get()) }

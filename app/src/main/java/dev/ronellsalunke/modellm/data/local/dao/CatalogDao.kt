@@ -21,21 +21,15 @@ interface CatalogDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun putMetadata(metadata: CatalogMetadataEntity)
 
-    @Insert
-    suspend fun insertProviders(providers: List<ProviderEntity>)
+    @Insert suspend fun insertProviders(providers: List<ProviderEntity>)
 
-    @Insert
-    suspend fun insertModels(models: List<ModelEntity>): List<Long>
+    @Insert suspend fun insertModels(models: List<ModelEntity>): List<Long>
 
-    @Insert
-    suspend fun insertSearchEntries(entries: List<ModelSearchEntity>)
+    @Insert suspend fun insertSearchEntries(entries: List<ModelSearchEntity>)
 
-    @Query("DELETE FROM models_fts")
-    suspend fun deleteSearchEntries()
+    @Query("DELETE FROM models_fts") suspend fun deleteSearchEntries()
 
-    @Query("DELETE FROM models")
-    suspend fun deleteModels()
+    @Query("DELETE FROM models") suspend fun deleteModels()
 
-    @Query("DELETE FROM providers")
-    suspend fun deleteProviders()
+    @Query("DELETE FROM providers") suspend fun deleteProviders()
 }

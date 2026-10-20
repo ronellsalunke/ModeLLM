@@ -20,13 +20,19 @@ class MainActivity : ComponentActivity() {
         setContent {
             val viewModel = koinViewModel<SettingsViewModel>()
             val state by viewModel.uiState.collectAsStateWithLifecycle()
-            val darkTheme = when (state.settings.themeMode) {
-                ThemeMode.System -> isSystemInDarkTheme()
-                ThemeMode.Light -> false
-                ThemeMode.Dark -> true
+            val darkTheme =
+                when (state.settings.themeMode) {
+                    ThemeMode.System -> isSystemInDarkTheme()
+                    ThemeMode.Light -> false
+                    ThemeMode.Dark -> true
+                }
+            ModeLLMTheme(
+                darkTheme = darkTheme,
+                dynamicColor = state.settings.dynamicColor,
+                animateThemeChanges = state.settingsLoaded,
+            ) {
+                ModeLLMApp()
             }
-            ModeLLMTheme(darkTheme = darkTheme, dynamicColor = state.settings.dynamicColor,
-                animateThemeChanges = state.settingsLoaded) { ModeLLMApp() }
         }
     }
 }

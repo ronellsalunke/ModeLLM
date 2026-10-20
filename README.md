@@ -99,7 +99,7 @@ app/src/main/java/dev/ronellsalunke/modellm/
 1. Fork the repository.
 2. Create a branch for your change.
 3. Make your change and keep it focused.
-4. Run `./gradlew test` and build the app.
+4. Run `./gradlew test detekt` and build the app.
 5. Open a pull request.
 
 Match the existing Compose and data-layer patterns.

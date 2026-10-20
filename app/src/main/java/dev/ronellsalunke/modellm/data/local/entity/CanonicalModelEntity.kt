@@ -6,14 +6,15 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "canonical_models",
-    indices = [
-        Index(value = ["canonicalId"], unique = true),
-        Index("releaseDate"),
-        Index("minInputCost"),
-        Index("contextLimit"),
-        Index("knowledge"),
-        Index("labId"),
-    ],
+    indices =
+        [
+            Index(value = ["canonicalId"], unique = true),
+            Index("releaseDate"),
+            Index("minInputCost"),
+            Index("contextLimit"),
+            Index("knowledge"),
+            Index("labId"),
+        ],
 )
 data class CanonicalModelEntity(
     @PrimaryKey(autoGenerate = true) val rowId: Long = 0,

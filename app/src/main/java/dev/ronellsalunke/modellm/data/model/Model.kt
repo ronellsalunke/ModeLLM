@@ -7,12 +7,12 @@ enum class Modality(val wireName: String) {
     Image("image"),
     Pdf("pdf"),
     Audio("audio"),
-    Video("video"),
-    ;
+    Video("video");
 
     companion object {
-        fun fromWireName(value: String): Modality? =
-            entries.firstOrNull { it.wireName.equals(value, ignoreCase = true) }
+        fun fromWireName(value: String): Modality? = entries.firstOrNull {
+            it.wireName.equals(value, ignoreCase = true)
+        }
     }
 }
 

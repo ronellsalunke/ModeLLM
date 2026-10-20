@@ -5,10 +5,10 @@ import dev.ronellsalunke.modellm.data.local.dao.ProviderWithCount
 import dev.ronellsalunke.modellm.data.local.entity.ModelEntity
 import dev.ronellsalunke.modellm.data.local.entity.ModelSearchEntity
 import dev.ronellsalunke.modellm.data.local.entity.ProviderEntity
+import dev.ronellsalunke.modellm.data.model.Modality
 import dev.ronellsalunke.modellm.data.model.Model
 import dev.ronellsalunke.modellm.data.model.ModelCost
 import dev.ronellsalunke.modellm.data.model.ModelLimits
-import dev.ronellsalunke.modellm.data.model.Modality
 import dev.ronellsalunke.modellm.data.model.Provider
 import dev.ronellsalunke.modellm.data.model.ReasoningOption
 import dev.ronellsalunke.modellm.data.remote.dto.ModelDto
@@ -38,12 +38,10 @@ class CatalogMapper(private val json: Json) {
 
     fun toModelEntity(providerId: String, fallbackId: String, dto: ModelDto): ModelEntity {
         val modelId = dto.id?.takeIf { it.isNotBlank() } ?: fallbackId
-        val inputModalities = dto.modalities?.input.orEmpty()
-            .mapNotNull { Modality.fromWireName(it) }
-            .toSet()
-        val outputModalities = dto.modalities?.output.orEmpty()
-            .mapNotNull { Modality.fromWireName(it) }
-            .toSet()
+        val inputModalities =
+            dto.modalities?.input.orEmpty().mapNotNull { Modality.fromWireName(it) }.toSet()
+        val outputModalities =
+            dto.modalities?.output.orEmpty().mapNotNull { Modality.fromWireName(it) }.toSet()
 
         return ModelEntity(
             providerId = providerId,
@@ -84,9 +82,8 @@ class CatalogMapper(private val json: Json) {
             supportsPdfOutput = Modality.Pdf in outputModalities,
             supportsAudioOutput = Modality.Audio in outputModalities,
             supportsVideoOutput = Modality.Video in outputModalities,
-            reasoningOptionsJson = dto.reasoningOptions
-                ?.takeIf { it.isNotEmpty() }
-                ?.let { json.encodeToString(it) },
+            reasoningOptionsJson =
+                dto.reasoningOptions?.takeIf { it.isNotEmpty() }?.let { json.encodeToString(it) },
             interleavedJson = dto.interleaved?.toString(),
             providerNpm = dto.provider.providerNpm(),
         )
@@ -116,19 +113,6 @@ class CatalogMapper(private val json: Json) {
 
     fun toModel(row: ModelWithProvider, includeReasoningOptions: Boolean = false): Model {
         val entity = row.model
-        val reasoningOptions = if (includeReasoningOptions) {
-            entity.reasoningOptionsJson
-                ?.let { stored ->
-                    runCatching {
-                        json.decodeFromString<List<ReasoningOptionDto>>(stored)
-                    }.getOrNull()
-                }
-                .orEmpty()
-                .map { it.toDomain() }
-        } else {
-            emptyList()
-        }
-
         return Model(
             providerId = entity.providerId,
             providerName = row.providerName,
@@ -149,39 +133,59 @@ class CatalogMapper(private val json: Json) {
             releaseDate = entity.releaseDate,
             lastUpdated = entity.lastUpdated,
             knowledge = entity.knowledge,
-            limits = ModelLimits(
-                context = entity.contextLimit,
-                input = entity.maxInputTokens,
-                output = entity.maxOutputTokens,
-            ),
-            cost = ModelCost(
-                input = entity.costInput,
-                output = entity.costOutput,
-                cacheRead = entity.costCacheRead,
-                cacheWrite = entity.costCacheWrite,
-                reasoning = entity.costReasoning,
-                inputAudio = entity.costInputAudio,
-                outputAudio = entity.costOutputAudio,
-            ),
-            inputModalities = buildList {
-                if (entity.supportsTextInput) add(Modality.Text)
-                if (entity.supportsImageInput) add(Modality.Image)
-                if (entity.supportsPdfInput) add(Modality.Pdf)
-                if (entity.supportsAudioInput) add(Modality.Audio)
-                if (entity.supportsVideoInput) add(Modality.Video)
-            },
-            outputModalities = buildList {
-                if (entity.supportsTextOutput) add(Modality.Text)
-                if (entity.supportsImageOutput) add(Modality.Image)
-                if (entity.supportsPdfOutput) add(Modality.Pdf)
-                if (entity.supportsAudioOutput) add(Modality.Audio)
-                if (entity.supportsVideoOutput) add(Modality.Video)
-            },
-            reasoningOptions = reasoningOptions,
+            limits =
+                ModelLimits(
+                    context = entity.contextLimit,
+                    input = entity.maxInputTokens,
+                    output = entity.maxOutputTokens,
+                ),
+            cost =
+                ModelCost(
+                    input = entity.costInput,
+                    output = entity.costOutput,
+                    cacheRead = entity.costCacheRead,
+                    cacheWrite = entity.costCacheWrite,
+                    reasoning = entity.costReasoning,
+                    inputAudio = entity.costInputAudio,
+                    outputAudio = entity.costOutputAudio,
+                ),
+            inputModalities = toInputModalities(entity),
+            outputModalities = toOutputModalities(entity),
+            reasoningOptions =
+                parseReasoningOptions(entity.reasoningOptionsJson, includeReasoningOptions),
             interleavedJson = entity.interleavedJson,
             providerNpm = entity.providerNpm,
         )
     }
+
+    private fun parseReasoningOptions(
+        stored: String?,
+        includeReasoningOptions: Boolean,
+    ): List<ReasoningOption> {
+        if (!includeReasoningOptions || stored == null) return emptyList()
+        return runCatching { json.decodeFromString<List<ReasoningOptionDto>>(stored) }
+            .getOrNull()
+            .orEmpty()
+            .map { it.toDomain() }
+    }
+
+    private fun toInputModalities(entity: ModelEntity): List<Modality> =
+        buildList {
+            if (entity.supportsTextInput) add(Modality.Text)
+            if (entity.supportsImageInput) add(Modality.Image)
+            if (entity.supportsPdfInput) add(Modality.Pdf)
+            if (entity.supportsAudioInput) add(Modality.Audio)
+            if (entity.supportsVideoInput) add(Modality.Video)
+        }
+
+    private fun toOutputModalities(entity: ModelEntity): List<Modality> =
+        buildList {
+            if (entity.supportsTextOutput) add(Modality.Text)
+            if (entity.supportsImageOutput) add(Modality.Image)
+            if (entity.supportsPdfOutput) add(Modality.Pdf)
+            if (entity.supportsAudioOutput) add(Modality.Audio)
+            if (entity.supportsVideoOutput) add(Modality.Video)
+        }
 
     private fun ReasoningOptionDto.toDomain(): ReasoningOption =
         ReasoningOption(
@@ -196,9 +200,10 @@ class CatalogMapper(private val json: Json) {
         return (fields["npm"] as? JsonPrimitive)?.contentOrNull
     }
 
-    private fun JsonElement?.isExperimental(): Boolean = when (this) {
-        null -> false
-        is JsonPrimitive -> booleanOrNull ?: true
-        else -> true
-    }
+    private fun JsonElement?.isExperimental(): Boolean =
+        when (this) {
+            null -> false
+            is JsonPrimitive -> booleanOrNull ?: true
+            else -> true
+        }
 }

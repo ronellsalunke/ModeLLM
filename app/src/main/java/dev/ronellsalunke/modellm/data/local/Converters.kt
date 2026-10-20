@@ -7,8 +7,7 @@ class Converters {
     private val json = Json
 
     @TypeConverter
-    fun fromStringList(value: List<String>?): String =
-        json.encodeToString(value.orEmpty())
+    fun fromStringList(value: List<String>?): String = json.encodeToString(value.orEmpty())
 
     @TypeConverter
     fun toStringList(value: String?): List<String> {

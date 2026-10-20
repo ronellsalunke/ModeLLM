@@ -7,22 +7,24 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "models",
-    foreignKeys = [
-        ForeignKey(
-            entity = ProviderEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["providerId"],
-            onDelete = ForeignKey.CASCADE,
-        ),
-    ],
-    indices = [
-        Index("modelId"),
-        Index(value = ["providerId", "modelId"], unique = true),
-        Index("releaseDate"),
-        Index("costInput"),
-        Index("contextLimit"),
-        Index("knowledge"),
-    ],
+    foreignKeys =
+        [
+            ForeignKey(
+                entity = ProviderEntity::class,
+                parentColumns = ["id"],
+                childColumns = ["providerId"],
+                onDelete = ForeignKey.CASCADE,
+            )
+        ],
+    indices =
+        [
+            Index("modelId"),
+            Index(value = ["providerId", "modelId"], unique = true),
+            Index("releaseDate"),
+            Index("costInput"),
+            Index("contextLimit"),
+            Index("knowledge"),
+        ],
 )
 data class ModelEntity(
     @PrimaryKey(autoGenerate = true) val rowId: Long = 0,

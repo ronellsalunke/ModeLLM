@@ -5,9 +5,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
 /**
- * The root of `api.json` is a JSON object keyed by provider id, so the response is
- * decoded as `Map<String, ProviderDto>`. Every field is nullable because models.dev
- * adds, renames, and omits fields without a schema version.
+ * The root of `api.json` is a JSON object keyed by provider id, so the response is decoded as
+ * `Map<String, ProviderDto>`. Every field is nullable because models.dev adds, renames, and omits
+ * fields without a schema version.
  */
 @Serializable
 data class ProviderDto(

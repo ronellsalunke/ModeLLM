@@ -4,17 +4,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Shapes
 import androidx.compose.ui.unit.dp
 
-/**
- * Radii sampled from models.dev: 2px icon tiles, 4px controls, 6px menu rows,
- * 8px dialogs.
- */
-val ModelsDevShapes = Shapes(
-    extraSmall = RoundedCornerShape(2.dp),
-    small = RoundedCornerShape(4.dp),
-    medium = RoundedCornerShape(6.dp),
-    large = RoundedCornerShape(8.dp),
-    extraLarge = RoundedCornerShape(12.dp),
-)
+/** Radii sampled from models.dev: 2px icon tiles, 4px controls, 6px menu rows, 8px dialogs. */
+val ModelsDevShapes =
+    Shapes(
+        extraSmall = RoundedCornerShape(2.dp),
+        small = RoundedCornerShape(4.dp),
+        medium = RoundedCornerShape(6.dp),
+        large = RoundedCornerShape(8.dp),
+        extraLarge = RoundedCornerShape(12.dp),
+    )
 
 object Dimens {
     val hairline = 1.dp

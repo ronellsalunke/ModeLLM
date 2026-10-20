@@ -23,10 +23,15 @@ class ProviderDetailViewModel(
     repository: CatalogRepository,
     private val scheduler: CatalogSyncScheduler,
 ) : ViewModel() {
-    val uiState = combine(
-        repository.observeProvider(providerId), repository.observeModelsByProvider(providerId), repository.syncState,
-    ) { provider, models, sync -> ProviderDetailUiState(provider, models, false, sync) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProviderDetailUiState())
+    val uiState =
+        combine(
+                repository.observeProvider(providerId),
+                repository.observeModelsByProvider(providerId),
+                repository.syncState,
+            ) { provider, models, sync ->
+                ProviderDetailUiState(provider, models, false, sync)
+            }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ProviderDetailUiState())
 
     fun refresh() = scheduler.syncNow()
 }

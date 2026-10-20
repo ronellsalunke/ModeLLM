@@ -7,8 +7,8 @@ import androidx.room.FtsOptions
 import androidx.room.PrimaryKey
 
 /**
- * Standalone FTS4 index so search covers model, family, description, provider name,
- * and the provider-qualified model id. Rows are rebuilt during each catalogue sync.
+ * Standalone FTS4 index so search covers model, family, description, provider name, and the
+ * provider-qualified model id. Rows are rebuilt during each catalogue sync.
  */
 @Fts4(tokenizer = FtsOptions.TOKENIZER_UNICODE61)
 @Entity(tableName = "models_fts")

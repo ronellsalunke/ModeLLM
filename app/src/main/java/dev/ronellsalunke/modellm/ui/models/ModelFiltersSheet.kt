@@ -1,13 +1,39 @@
 package dev.ronellsalunke.modellm.ui.models
 
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
@@ -16,26 +42,29 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import dev.ronellsalunke.modellm.data.model.*
-import dev.ronellsalunke.modellm.ui.components.*
+import dev.ronellsalunke.modellm.data.model.Capability
+import dev.ronellsalunke.modellm.data.model.Lab
+import dev.ronellsalunke.modellm.data.model.Modality
+import dev.ronellsalunke.modellm.data.model.ModelFilters
+import dev.ronellsalunke.modellm.data.model.Provider
+import dev.ronellsalunke.modellm.ui.components.CatalogDivider
+import dev.ronellsalunke.modellm.ui.components.LabLogo
+import dev.ronellsalunke.modellm.ui.components.ProviderLogo
+import dev.ronellsalunke.modellm.ui.components.SearchField
+import dev.ronellsalunke.modellm.ui.components.SectionHeader
+import dev.ronellsalunke.modellm.ui.components.SingleChoiceButtonGroup
 import dev.ronellsalunke.modellm.ui.theme.Dimens
 import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
 import dev.ronellsalunke.modellm.ui.util.capabilityLabel
 import dev.ronellsalunke.modellm.ui.util.modalityLabel
 import kotlinx.coroutines.launch
 
-data class ActiveFilter(val key: String, val label: String, val remove: ModelFilters)
-
-fun ModelFilters.activeFilters(providers: List<Provider>, labs: List<Lab>): List<ActiveFilter> = buildList {
-    labIds.forEach { id -> add(ActiveFilter("lab:$id", labs.firstOrNull { it.id == id }?.name ?: id,
-        copy(labIds = labIds - id))) }
-    providerIds.forEach { id -> add(ActiveFilter("provider:$id", providers.firstOrNull { it.id == id }?.name ?: id,
-        copy(providerIds = providerIds - id))) }
-    inputModalities.forEach { add(ActiveFilter("input:$it", "Input: ${modalityLabel(it)}", copy(inputModalities = inputModalities - it))) }
-    capabilities.forEach { add(ActiveFilter("capability:$it", capabilityLabel(it), copy(capabilities = capabilities - it))) }
-    if (openWeights == true) add(ActiveFilter("weights", "Open weights", copy(openWeights = null)))
-    knowledgeAfter?.let { add(ActiveFilter("knowledge", "Knowledge: ${it.take(4)}+", copy(knowledgeAfter = null))) }
-}
+private const val SheetMaxHeightFraction = 0.9f
+private val SheetCornerRadius = 16.dp
+private val ItemMinHeight = 48.dp
+private val LogoSize = 20.dp
+private val BorderStrokeWidth = 1.dp
+private val CutoffYears = listOf("2024", "2025", "2026")
 
 private fun <T> Set<T>.toggle(value: T): Set<T> = if (value in this) this - value else this + value
 
@@ -48,13 +77,6 @@ fun ModelFiltersSheet(
     onDismiss: () -> Unit,
     onUpdateFilters: ((ModelFilters) -> ModelFilters) -> Unit,
 ) {
-    var providerQuery by remember { mutableStateOf("") }
-    var labQuery by remember { mutableStateOf("") }
-    var showLabs by remember { mutableStateOf(true) }
-    val visibleLabs = remember(labs, labQuery) { labs.filter { it.name.contains(labQuery, true) || it.id.contains(labQuery, true) } }
-    val visibleProviders = remember(providers, providerQuery) {
-        providers.filter { it.name.contains(providerQuery, true) || it.id.contains(providerQuery, true) }
-    }
     val sheetState = rememberBottomSheetState(
         initialValue = SheetValue.Hidden,
         enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded),
@@ -69,92 +91,273 @@ fun ModelFiltersSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = LocalAppPalette.current.background,
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        shape = RoundedCornerShape(topStart = SheetCornerRadius, topEnd = SheetCornerRadius),
     ) {
         val focusManager = LocalFocusManager.current
         val keyboardController = LocalSoftwareKeyboardController.current
         DisposableEffect(focusManager, keyboardController) {
-            onDispose { focusManager.clearFocus(); keyboardController?.hide() }
+            onDispose {
+                focusManager.clearFocus()
+                keyboardController?.hide()
+            }
         }
-        Column(Modifier.fillMaxWidth().fillMaxHeight(0.9f).imePadding()) {
-            Text("Filters", style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = Dimens.lg, vertical = Dimens.sm))
-            LazyColumn(Modifier.weight(1f)) {
-                item {
-                    SectionHeader("Input modalities · match all")
-                    FlowRow(Modifier.padding(horizontal = Dimens.lg), horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-                        Modality.entries.forEach { modality ->
-                            FilterChip(selected = modality in filters.inputModalities, shape = MaterialTheme.shapes.small,
-                                onClick = { onUpdateFilters { it.copy(inputModalities = it.inputModalities.toggle(modality)) } },
-                                label = { Text(modalityLabel(modality)) })
-                        }
-                    }
-                    SectionHeader("Capabilities · match all")
-                    FlowRow(Modifier.padding(horizontal = Dimens.lg), horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-                        Capability.entries.forEach { capability ->
-                            FilterChip(selected = capability in filters.capabilities, shape = MaterialTheme.shapes.small,
-                                onClick = { onUpdateFilters { it.copy(capabilities = it.capabilities.toggle(capability)) } },
-                                label = { Text(capabilityLabel(capability)) })
-                        }
-                    }
-                    Row(Modifier.fillMaxWidth().padding(horizontal = Dimens.lg), verticalAlignment = Alignment.CenterVertically) {
-                        Text("Open weights only", modifier = Modifier.weight(1f))
-                        Switch(checked = filters.openWeights == true, onCheckedChange = { checked -> onUpdateFilters { it.copy(openWeights = if (checked) true else null) } },
-                            modifier = Modifier.semantics { contentDescription = "Open weights only" })
-                    }
-                    SectionHeader("Knowledge cutoff")
-                    FlowRow(Modifier.padding(horizontal = Dimens.lg), horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-                        listOf("2024", "2025", "2026").forEach { year ->
-                            val cutoff = "$year-01"
-                            FilterChip(selected = filters.knowledgeAfter == cutoff, shape = MaterialTheme.shapes.small,
-                                onClick = { onUpdateFilters { it.copy(knowledgeAfter = if (it.knowledgeAfter == cutoff) null else cutoff) } },
-                                label = { Text("$year+") })
-                        }
-                    }
-                    SingleChoiceButtonGroup(
-                        labels = listOf("Labs (${labs.size})", "Providers (${providers.size})"),
-                        selectedIndex = if (showLabs) 0 else 1,
-                        onSelect = { showLabs = it == 0 },
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.lg, vertical = Dimens.sm),
-                    )
-                    SearchField(if (showLabs) labQuery else providerQuery,
-                        { if (showLabs) labQuery = it else providerQuery = it },
-                        if (showLabs) "Search labs" else "Search providers",
-                        Modifier.fillMaxWidth().padding(horizontal = Dimens.lg, vertical = Dimens.sm))
-                }
-                if (showLabs) {
-                    items(visibleLabs, key = { "lab:${it.id}" }) { lab ->
-                        Row(Modifier.fillMaxWidth().heightIn(min = 48.dp)
-                            .toggleable(value = lab.id in filters.labIds, role = Role.Checkbox,
-                                onValueChange = { onUpdateFilters { it.copy(labIds = it.labIds.toggle(lab.id)) } })
-                            .padding(horizontal = Dimens.lg), verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-                            Checkbox(checked = lab.id in filters.labIds, onCheckedChange = null)
-                            LabLogo(lab.id, lab.name, 20.dp)
-                            Text(lab.name, style = MaterialTheme.typography.bodyMedium)
-                        }
-                    }
-                } else {
-                    items(visibleProviders, key = { "provider:${it.id}" }) { provider ->
-                        Row(Modifier.fillMaxWidth().heightIn(min = 48.dp)
-                            .toggleable(value = provider.id in filters.providerIds, role = Role.Checkbox,
-                                onValueChange = { onUpdateFilters { it.copy(providerIds = it.providerIds.toggle(provider.id)) } })
-                            .padding(horizontal = Dimens.lg), verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-                            Checkbox(checked = provider.id in filters.providerIds, onCheckedChange = null)
-                            ProviderLogo(provider.id, provider.name, 20.dp)
-                            Text(provider.name, style = MaterialTheme.typography.bodyMedium)
-                        }
+        FilterSheetContent(
+            filters = filters,
+            providers = providers,
+            labs = labs,
+            onHide = hideSheet,
+            onUpdateFilters = onUpdateFilters,
+        )
+    }
+}
+
+@Composable
+private fun FilterSheetContent(
+    filters: ModelFilters,
+    providers: List<Provider>,
+    labs: List<Lab>,
+    onHide: () -> Unit,
+    onUpdateFilters: ((ModelFilters) -> ModelFilters) -> Unit,
+) {
+    var providerQuery by remember { mutableStateOf("") }
+    var labQuery by remember { mutableStateOf("") }
+    var showLabs by remember { mutableStateOf(true) }
+    val visibleLabs = remember(labs, labQuery) {
+        labs.filter { it.name.contains(labQuery, true) || it.id.contains(labQuery, true) }
+    }
+    val visibleProviders = remember(providers, providerQuery) {
+        providers.filter {
+            it.name.contains(providerQuery, true) || it.id.contains(providerQuery, true)
+        }
+    }
+    Column(Modifier.fillMaxWidth().fillMaxHeight(SheetMaxHeightFraction).imePadding()) {
+        Text(
+            "Filters",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = Dimens.lg, vertical = Dimens.sm),
+        )
+        LazyColumn(Modifier.weight(1f)) {
+            item {
+                ModalitiesAndCapabilitiesSection(filters, onUpdateFilters)
+                KnowledgeCutoffSection(filters.knowledgeAfter) { cutoff ->
+                    onUpdateFilters {
+                        it.copy(knowledgeAfter = if (it.knowledgeAfter == cutoff) null else cutoff)
                     }
                 }
+                FilterTargetSection(
+                    showLabs = showLabs,
+                    labsCount = labs.size,
+                    providersCount = providers.size,
+                    query = if (showLabs) labQuery else providerQuery,
+                    onToggleLabs = { showLabs = it },
+                    onQueryChange = { if (showLabs) labQuery = it else providerQuery = it },
+                )
             }
-            CatalogDivider()
-            Row(Modifier.fillMaxWidth().padding(Dimens.lg), horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
-                OutlinedButton(onClick = { onUpdateFilters { ModelFilters() }; providerQuery = ""; labQuery = "" }, modifier = Modifier.weight(1f), shape = MaterialTheme.shapes.small,
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = LocalAppPalette.current.brandText),
-                    border = BorderStroke(1.dp, LocalAppPalette.current.border)) { Text("Reset") }
-                Button(onClick = hideSheet, modifier = Modifier.weight(1f), shape = MaterialTheme.shapes.small) { Text("Done") }
+            filterEntityItems(showLabs, visibleLabs, visibleProviders, filters, onUpdateFilters)
+        }
+        CatalogDivider()
+        FilterActionButtons(
+            onReset = {
+                onUpdateFilters { ModelFilters() }
+                providerQuery = ""
+                labQuery = ""
+            },
+            onDone = onHide,
+        )
+    }
+}
+
+private fun LazyListScope.filterEntityItems(
+    showLabs: Boolean,
+    visibleLabs: List<Lab>,
+    visibleProviders: List<Provider>,
+    filters: ModelFilters,
+    onUpdateFilters: ((ModelFilters) -> ModelFilters) -> Unit,
+) {
+    if (showLabs) {
+        items(visibleLabs, key = { "lab:${it.id}" }) { lab ->
+            LabFilterRow(lab, lab.id in filters.labIds) {
+                onUpdateFilters { it.copy(labIds = it.labIds.toggle(lab.id)) }
             }
+        }
+    } else {
+        items(visibleProviders, key = { "provider:${it.id}" }) { provider ->
+            ProviderFilterRow(provider, provider.id in filters.providerIds) {
+                onUpdateFilters {
+                    it.copy(providerIds = it.providerIds.toggle(provider.id))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ModalitiesAndCapabilitiesSection(
+    filters: ModelFilters,
+    onUpdateFilters: ((ModelFilters) -> ModelFilters) -> Unit,
+) {
+    SectionHeader("Input modalities · match all")
+    FlowRow(
+        Modifier.padding(horizontal = Dimens.lg),
+        horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
+    ) {
+        Modality.entries.forEach { modality ->
+            FilterChip(
+                selected = modality in filters.inputModalities,
+                shape = MaterialTheme.shapes.small,
+                onClick = {
+                    onUpdateFilters {
+                        it.copy(inputModalities = it.inputModalities.toggle(modality))
+                    }
+                },
+                label = { Text(modalityLabel(modality)) },
+            )
+        }
+    }
+    SectionHeader("Capabilities · match all")
+    FlowRow(
+        Modifier.padding(horizontal = Dimens.lg),
+        horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
+    ) {
+        Capability.entries.forEach { capability ->
+            FilterChip(
+                selected = capability in filters.capabilities,
+                shape = MaterialTheme.shapes.small,
+                onClick = {
+                    onUpdateFilters {
+                        it.copy(capabilities = it.capabilities.toggle(capability))
+                    }
+                },
+                label = { Text(capabilityLabel(capability)) },
+            )
+        }
+    }
+    Row(
+        Modifier.fillMaxWidth().padding(horizontal = Dimens.lg),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text("Open weights only", modifier = Modifier.weight(1f))
+        Switch(
+            checked = filters.openWeights == true,
+            onCheckedChange = { checked ->
+                onUpdateFilters { it.copy(openWeights = if (checked) true else null) }
+            },
+            modifier = Modifier.semantics { contentDescription = "Open weights only" },
+        )
+    }
+}
+
+@Composable
+private fun KnowledgeCutoffSection(
+    selectedCutoff: String?,
+    onSelectCutoff: (String) -> Unit,
+) {
+    SectionHeader("Knowledge cutoff")
+    FlowRow(
+        Modifier.padding(horizontal = Dimens.lg),
+        horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
+    ) {
+        CutoffYears.forEach { year ->
+            val cutoff = "$year-01"
+            FilterChip(
+                selected = selectedCutoff == cutoff,
+                shape = MaterialTheme.shapes.small,
+                onClick = { onSelectCutoff(cutoff) },
+                label = { Text("$year+") },
+            )
+        }
+    }
+}
+
+@Composable
+private fun FilterTargetSection(
+    showLabs: Boolean,
+    labsCount: Int,
+    providersCount: Int,
+    query: String,
+    onToggleLabs: (Boolean) -> Unit,
+    onQueryChange: (String) -> Unit,
+) {
+    SingleChoiceButtonGroup(
+        labels = listOf("Labs ($labsCount)", "Providers ($providersCount)"),
+        selectedIndex = if (showLabs) 0 else 1,
+        onSelect = { onToggleLabs(it == 0) },
+        modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.lg, vertical = Dimens.sm),
+    )
+    SearchField(
+        query = query,
+        onQueryChange = onQueryChange,
+        label = if (showLabs) "Search labs" else "Search providers",
+        modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.lg, vertical = Dimens.sm),
+    )
+}
+
+@Composable
+private fun LabFilterRow(
+    lab: Lab,
+    selected: Boolean,
+    onToggle: () -> Unit,
+) {
+    Row(
+        Modifier.fillMaxWidth()
+            .heightIn(min = ItemMinHeight)
+            .toggleable(value = selected, role = Role.Checkbox, onValueChange = { onToggle() })
+            .padding(horizontal = Dimens.lg),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
+    ) {
+        Checkbox(checked = selected, onCheckedChange = null)
+        LabLogo(lab.id, lab.name, LogoSize)
+        Text(lab.name, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
+private fun ProviderFilterRow(
+    provider: Provider,
+    selected: Boolean,
+    onToggle: () -> Unit,
+) {
+    Row(
+        Modifier.fillMaxWidth()
+            .heightIn(min = ItemMinHeight)
+            .toggleable(value = selected, role = Role.Checkbox, onValueChange = { onToggle() })
+            .padding(horizontal = Dimens.lg),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
+    ) {
+        Checkbox(checked = selected, onCheckedChange = null)
+        ProviderLogo(provider.id, provider.name, LogoSize)
+        Text(provider.name, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
+private fun FilterActionButtons(
+    onReset: () -> Unit,
+    onDone: () -> Unit,
+) {
+    Row(
+        Modifier.fillMaxWidth().padding(Dimens.lg),
+        horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
+    ) {
+        OutlinedButton(
+            onClick = onReset,
+            modifier = Modifier.weight(1f),
+            shape = MaterialTheme.shapes.small,
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = LocalAppPalette.current.brandText,
+            ),
+            border = BorderStroke(BorderStrokeWidth, LocalAppPalette.current.border),
+        ) {
+            Text("Reset")
+        }
+        Button(
+            onClick = onDone,
+            modifier = Modifier.weight(1f),
+            shape = MaterialTheme.shapes.small,
+        ) {
+            Text("Done")
         }
     }
 }

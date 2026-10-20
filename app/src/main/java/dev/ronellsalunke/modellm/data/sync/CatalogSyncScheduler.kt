@@ -15,50 +15,52 @@ class CatalogSyncScheduler(private val context: Context) {
 
     /** Schedules daily automatic syncs, gated to at most once per 24 hours. */
     fun schedulePeriodicSync() {
-        val request = PeriodicWorkRequestBuilder<CatalogSyncWorker>(1, TimeUnit.DAYS)
-            .setConstraints(networkConstraints())
-            .build()
+        val request =
+            PeriodicWorkRequestBuilder<CatalogSyncWorker>(1, TimeUnit.DAYS)
+                .setConstraints(networkConstraints())
+                .build()
 
-        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-            PERIODIC_WORK_NAME,
-            ExistingPeriodicWorkPolicy.KEEP,
-            request,
-        )
+        WorkManager.getInstance(context)
+            .enqueueUniquePeriodicWork(
+                PERIODIC_WORK_NAME,
+                ExistingPeriodicWorkPolicy.KEEP,
+                request,
+            )
     }
 
-    /**
-     * Catches up on app start when the catalogue is empty or at least 24 hours old.
-     */
+    /** Catches up on app start when the catalogue is empty or at least 24 hours old. */
     fun ensureInitialSync() {
-        val request = OneTimeWorkRequestBuilder<CatalogSyncWorker>()
-            .setConstraints(networkConstraints())
-            .build()
+        val request =
+            OneTimeWorkRequestBuilder<CatalogSyncWorker>()
+                .setConstraints(networkConstraints())
+                .build()
 
-        WorkManager.getInstance(context).enqueueUniqueWork(
-            INITIAL_WORK_NAME,
-            ExistingWorkPolicy.KEEP,
-            request,
-        )
+        WorkManager.getInstance(context)
+            .enqueueUniqueWork(
+                INITIAL_WORK_NAME,
+                ExistingWorkPolicy.KEEP,
+                request,
+            )
     }
 
     /** Forces a download with no cooldown, replacing any pending manual request. */
     fun syncNow() {
-        val request = OneTimeWorkRequestBuilder<CatalogSyncWorker>()
-            .setInputData(workDataOf(CatalogSyncWorker.KEY_FORCE_REFRESH to true))
-            .setConstraints(networkConstraints())
-            .build()
+        val request =
+            OneTimeWorkRequestBuilder<CatalogSyncWorker>()
+                .setInputData(workDataOf(CatalogSyncWorker.KEY_FORCE_REFRESH to true))
+                .setConstraints(networkConstraints())
+                .build()
 
-        WorkManager.getInstance(context).enqueueUniqueWork(
-            MANUAL_WORK_NAME,
-            ExistingWorkPolicy.REPLACE,
-            request,
-        )
+        WorkManager.getInstance(context)
+            .enqueueUniqueWork(
+                MANUAL_WORK_NAME,
+                ExistingWorkPolicy.REPLACE,
+                request,
+            )
     }
 
     private fun networkConstraints(): Constraints =
-        Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
+        Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
 
     private companion object {
         const val PERIODIC_WORK_NAME = "catalog-sync-periodic"

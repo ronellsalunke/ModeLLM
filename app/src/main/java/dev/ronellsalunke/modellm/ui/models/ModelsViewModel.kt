@@ -10,9 +10,15 @@ import dev.ronellsalunke.modellm.data.model.Provider
 import dev.ronellsalunke.modellm.data.repository.CatalogRepository
 import dev.ronellsalunke.modellm.data.repository.SyncState
 import dev.ronellsalunke.modellm.data.sync.CatalogSyncScheduler
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 
 data class ModelsUiState(
     val filters: ModelFilters = ModelFilters(),
@@ -39,23 +45,59 @@ class ModelsViewModel(
     private val filters = MutableStateFlow(ModelFilters())
     private val sort = MutableStateFlow(ModelSort.Newest)
     private val selection = combine(query.debounce(150), filters, sort, ::ModelSelection)
-    private val results = selection.flatMapLatest { selected ->
-        repository.observeCanonicalModels(selected.query, selected.filters, selected.sort)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
-    private val catalog = combine(
-        repository.observeProviders(), repository.syncState, repository.observeLastSyncedAt(),
-    ) { providers, sync, last -> Triple(providers, sync, last) }
+    private val results =
+        selection
+            .flatMapLatest { selected ->
+                repository.observeCanonicalModels(selected.query, selected.filters, selected.sort)
+            }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+    private val catalog =
+        combine(
+            repository.observeProviders(),
+            repository.syncState,
+            repository.observeLastSyncedAt(),
+        ) { providers, sync, last ->
+            Triple(providers, sync, last)
+        }
 
-    val uiState = combine(filters, sort, results, catalog, repository.observeLabs()) { filters, sort, result, catalog, labs ->
-        ModelsUiState(filters, sort, result, catalog.first, labs, catalog.second, catalog.third)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ModelsUiState())
+    val uiState =
+        combine(filters, sort, results, catalog, repository.observeLabs()) {
+                filters,
+                sort,
+                result,
+                catalog,
+                labs ->
+                ModelsUiState(
+                    filters,
+                    sort,
+                    result,
+                    catalog.first,
+                    labs,
+                    catalog.second,
+                    catalog.third,
+                )
+            }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ModelsUiState())
 
-    fun setQuery(value: String) { query.value = value }
-    fun setFilters(value: ModelFilters) { filters.value = value }
-    fun updateFilters(transform: (ModelFilters) -> ModelFilters) { filters.update(transform) }
-    fun setSort(value: ModelSort) { sort.value = value }
+    fun setQuery(value: String) {
+        query.value = value
+    }
+
+    fun setFilters(value: ModelFilters) {
+        filters.value = value
+    }
+
+    fun updateFilters(transform: (ModelFilters) -> ModelFilters) {
+        filters.update(transform)
+    }
+
+    fun setSort(value: ModelSort) {
+        sort.value = value
+    }
+
     fun clearFilters() {
         filters.value = ModelFilters()
     }
+
     fun refresh() = scheduler.syncNow()
 }

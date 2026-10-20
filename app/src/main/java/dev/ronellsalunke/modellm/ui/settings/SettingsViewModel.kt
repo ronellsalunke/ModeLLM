@@ -9,7 +9,11 @@ import dev.ronellsalunke.modellm.data.settings.SettingsRepository
 import dev.ronellsalunke.modellm.data.settings.ThemeMode
 import dev.ronellsalunke.modellm.data.sync.CatalogSyncScheduler
 import java.io.IOException
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class SettingsUiState(
@@ -27,18 +31,22 @@ class SettingsViewModel(
 ) : ViewModel() {
     private val error = MutableStateFlow<String?>(null)
     private val settingsLoaded = MutableStateFlow(false)
-    val uiState = combine(
-        repository.settings.onEach { settingsLoaded.value = true },
-        catalog.syncState,
-        catalog.observeLastSyncedAt(),
-        error,
-        settingsLoaded,
-    ) { settings, sync, last, error, loaded ->
-        SettingsUiState(settings, sync, last, error, loaded)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsUiState())
+    val uiState =
+        combine(
+                repository.settings.onEach { settingsLoaded.value = true },
+                catalog.syncState,
+                catalog.observeLastSyncedAt(),
+                error,
+                settingsLoaded,
+            ) { settings, sync, last, error, loaded ->
+                SettingsUiState(settings, sync, last, error, loaded)
+            }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SettingsUiState())
 
     fun setThemeMode(mode: ThemeMode) = save { repository.setThemeMode(mode) }
+
     fun setDynamicColor(enabled: Boolean) = save { repository.setDynamicColor(enabled) }
+
     private fun save(action: suspend () -> Unit) {
         viewModelScope.launch {
             try {
@@ -49,5 +57,6 @@ class SettingsViewModel(
             }
         }
     }
+
     fun refresh() = scheduler.syncNow()
 }

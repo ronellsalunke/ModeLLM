@@ -18,11 +18,12 @@ data class ModelWithProvider(
 @Dao
 interface ModelDao {
     @RawQuery(
-        observedEntities = [
-            ModelEntity::class,
-            ProviderEntity::class,
-            ModelSearchEntity::class,
-        ],
+        observedEntities =
+            [
+                ModelEntity::class,
+                ProviderEntity::class,
+                ModelSearchEntity::class,
+            ]
     )
     fun observeModels(query: SupportSQLiteQuery): Flow<List<ModelWithProvider>>
 
@@ -33,7 +34,7 @@ interface ModelDao {
         JOIN providers p ON p.id = m.providerId
         WHERE m.providerId = :providerId AND LOWER(m.modelId) = LOWER(:modelId)
         LIMIT 1
-        """,
+        """
     )
     fun observeModel(providerId: String, modelId: String): Flow<ModelWithProvider?>
 
@@ -44,7 +45,7 @@ interface ModelDao {
         JOIN providers p ON p.id = m.providerId
         WHERE m.providerId = :providerId
         ORDER BY m.name COLLATE NOCASE
-        """,
+        """
     )
     fun observeModelsByProvider(providerId: String): Flow<List<ModelWithProvider>>
 
@@ -53,10 +54,11 @@ interface ModelDao {
         SELECT m.*, p.name AS providerName
         FROM models m
         JOIN providers p ON p.id = m.providerId
-        JOIN canonical_model_providers c ON c.providerId = m.providerId AND c.providerModelId = m.modelId
+        JOIN canonical_model_providers c
+            ON c.providerId = m.providerId AND c.providerModelId = m.modelId
         WHERE LOWER(c.canonicalId) = LOWER(:canonicalId)
         ORDER BY p.name COLLATE NOCASE, m.name COLLATE NOCASE
-        """,
+        """
     )
     fun observeCanonicalProviders(canonicalId: String): Flow<List<ModelWithProvider>>
 }

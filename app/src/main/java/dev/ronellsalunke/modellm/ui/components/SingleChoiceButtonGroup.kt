@@ -3,7 +3,13 @@ package dev.ronellsalunke.modellm.ui.components
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.material3.*
+import androidx.compose.material3.ButtonGroup
+import androidx.compose.material3.ButtonGroupDefaults
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.SelectableDropdownMenuItem
+import androidx.compose.material3.Text
+import androidx.compose.material3.ToggleButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -34,25 +40,30 @@ fun SingleChoiceButtonGroup(
                     ToggleButton(
                         checked = selected,
                         onCheckedChange = { checked -> if (checked) onSelect(index) },
-                        shapes = when (index) {
-                            0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                            labels.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-                            else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-                        },
+                        shapes =
+                            when (index) {
+                                0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                                labels.lastIndex ->
+                                    ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                            },
                         interactionSource = interactions[index],
-                        modifier = Modifier
-                            .weight(1f)
-                            .animateWidth(interactions[index])
-                            .semantics {
+                        modifier =
+                            Modifier.weight(1f).animateWidth(interactions[index]).semantics {
                                 role = Role.RadioButton
                                 this.selected = selected
                             },
-                    ) { Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                    ) {
+                        Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
                 },
                 menuContent = { menuState ->
                     SelectableDropdownMenuItem(
                         selected = selected,
-                        onClick = { onSelect(index); menuState.dismiss() },
+                        onClick = {
+                            onSelect(index)
+                            menuState.dismiss()
+                        },
                         text = { Text(label) },
                         shapes = MenuDefaults.itemShapes(),
                     )

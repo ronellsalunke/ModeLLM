@@ -1,0 +1,26 @@
+# Project overrides for the detekt default configuration.
+# See https://detekt.dev/docs/introduction/configurations
+
+naming:
+  FunctionNaming:
+    # Compose UI functions use PascalCase.
+    functionPattern: '[a-zA-Z][a-zA-Z0-9]*'
+  TopLevelPropertyNaming:
+    # Compose top-level values use PascalCase.
+    constantPattern: '[A-Z][A-Za-z0-9]*'
+
+complexity:
+  LongParameterList:
+    allowedFunctionParameters: 8
+    ignoreDefaultParameters: true
+  TooManyFunctions:
+    ignoreAnnotatedFunctions:
+      - 'Preview'
+
+style:
+  MaxLineLength:
+    active: true
+    # Android Kotlin style guide column limit.
+    maxLineLength: 100
+  WildcardImport:
+    active: true

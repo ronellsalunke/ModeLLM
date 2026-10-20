@@ -4,8 +4,8 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
 /**
- * Palette sampled from models.dev. The site uses a flat, bordered surface style with
- * one orange accent and neutral greys rather than tonal Material containers.
+ * Palette sampled from models.dev. The site uses a flat, bordered surface style with one orange
+ * accent and neutral greys rather than tonal Material containers.
  */
 internal val BrandOrange = Color(0xFFFD9527)
 
@@ -38,22 +38,24 @@ data class AppPalette(
     val textTertiary: Color,
 )
 
-internal val LightAppPalette = AppPalette(
-    brand = BrandOrange,
-    brandText = LightBrandText,
-    background = LightBackground,
-    surface = LightSurface,
-    border = LightBorder,
-    textSecondary = LightTextSecondary,
-    textTertiary = LightTextTertiary,
-)
+internal val LightAppPalette =
+    AppPalette(
+        brand = BrandOrange,
+        brandText = LightBrandText,
+        background = LightBackground,
+        surface = LightSurface,
+        border = LightBorder,
+        textSecondary = LightTextSecondary,
+        textTertiary = LightTextTertiary,
+    )
 
-internal val DarkAppPalette = AppPalette(
-    brand = BrandOrange,
-    brandText = DarkBrandText,
-    background = DarkBackground,
-    surface = DarkSurface,
-    border = DarkBorder,
-    textSecondary = DarkTextSecondary,
-    textTertiary = DarkTextTertiary,
-)
+internal val DarkAppPalette =
+    AppPalette(
+        brand = BrandOrange,
+        brandText = DarkBrandText,
+        background = DarkBackground,
+        surface = DarkSurface,
+        border = DarkBorder,
+        textSecondary = DarkTextSecondary,
+        textTertiary = DarkTextTertiary,
+    )

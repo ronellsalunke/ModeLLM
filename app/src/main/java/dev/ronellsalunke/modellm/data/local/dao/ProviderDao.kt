@@ -18,7 +18,7 @@ interface ProviderDao {
         SELECT p.*, (SELECT COUNT(*) FROM models m WHERE m.providerId = p.id) AS modelCount
         FROM providers p
         ORDER BY p.name COLLATE NOCASE
-        """,
+        """
     )
     fun observeProviders(): Flow<List<ProviderWithCount>>
 
@@ -27,7 +27,7 @@ interface ProviderDao {
         SELECT p.*, (SELECT COUNT(*) FROM models m WHERE m.providerId = p.id) AS modelCount
         FROM providers p
         WHERE p.id = :providerId
-        """,
+        """
     )
     fun observeProvider(providerId: String): Flow<ProviderWithCount?>
 }

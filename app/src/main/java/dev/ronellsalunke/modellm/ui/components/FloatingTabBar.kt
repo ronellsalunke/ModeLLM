@@ -26,8 +26,8 @@ val FloatingTabBarClearance =
 data class FloatingTabItem(val label: String, val icon: ImageVector)
 
 /**
- * Floating pill navigation bar built on Material 3's [HorizontalFloatingToolbar] and [ToggleButton].
- * The selected item shows an icon and uses the toolbar's default container styling.
+ * Floating pill navigation bar built on Material 3's [HorizontalFloatingToolbar] and
+ * [ToggleButton]. The selected item shows an icon and uses the toolbar's default container styling.
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -46,19 +46,21 @@ fun FloatingTabBar(
             ToggleButton(
                 checked = selected,
                 onCheckedChange = { if (!selected) onSelect(index) },
-                modifier = Modifier.semantics {
-                    role = Role.Tab
-                    this.selected = selected
-                },
-                icon = if (selected) {
-                    { Icon(imageVector = item.icon, contentDescription = null) }
-                } else {
-                    null
-                },
+                modifier =
+                    Modifier.semantics {
+                        role = Role.Tab
+                        this.selected = selected
+                    },
+                icon =
+                    if (selected) {
+                        { Icon(imageVector = item.icon, contentDescription = null) }
+                    } else {
+                        null
+                    },
                 // ModelsDevShapes.medium is 6.dp, so keep the checked pill fully round.
-                shapes = ToggleButtonDefaults.shapesFor(ToggleButtonDefaults.size).copy(
-                    checkedShape = ToggleButtonDefaults.shape,
-                ),
+                shapes =
+                    ToggleButtonDefaults.shapesFor(ToggleButtonDefaults.size)
+                        .copy(checkedShape = ToggleButtonDefaults.shape),
             ) {
                 Text(
                     text = item.label,

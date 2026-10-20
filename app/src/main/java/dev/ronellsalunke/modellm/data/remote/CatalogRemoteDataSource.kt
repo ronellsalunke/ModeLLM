@@ -25,16 +25,19 @@ class CatalogRemoteDataSource(
         withContext(Dispatchers.IO) {
             coroutineScope {
                 val providers = async {
-                    client.prepareGet("https://models.dev/api.json") {
-                        parameter("type", "all")
-                    }.execute { response ->
-                        response.bodyAsChannel().toInputStream().use { input ->
-                            json.decodeFromStream<Map<String, ProviderDto>>(input)
-                                .map { (id, provider) ->
-                                    if (provider.id.isNullOrBlank()) provider.copy(id = id) else provider
-                                }
+                    client
+                        .prepareGet("https://models.dev/api.json") {
+                            parameter("type", "all")
                         }
-                    }
+                        .execute { response ->
+                            response.bodyAsChannel().toInputStream().use { input ->
+                                json.decodeFromStream<Map<String, ProviderDto>>(input).map {
+                                    (id, provider) ->
+                                    if (provider.id.isNullOrBlank()) provider.copy(id = id)
+                                    else provider
+                                }
+                            }
+                        }
                 }
                 val models = async {
                     client.prepareGet("https://models.dev/models.json").execute { response ->
