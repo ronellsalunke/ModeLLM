@@ -115,16 +115,14 @@ class CatalogRepository(
             .flowOn(Dispatchers.Default)
 
     /**
-     * Downloads the full catalogue at most once every 15 minutes and replaces the
-     * local snapshot in one transaction.
+     * Downloads the full catalogue and replaces the local snapshot in one transaction.
+     * Automatic syncs download only when the catalogue is empty or at least 24 hours old.
+     * Forced syncs ([force] = true) always download, with no cooldown.
      * A failed download leaves the existing data untouched.
      */
-    suspend fun refresh() {
+    suspend fun refresh(force: Boolean = false) {
         syncMutex.withLock {
-            val lastSyncedAt = catalogDao.getLastSyncedAt()
-            if (lastSyncedAt != null &&
-                System.currentTimeMillis() - lastSyncedAt < MIN_REFRESH_INTERVAL_MILLIS
-            ) {
+            if (!force && !isAutomaticRefreshDue()) {
                 return@withLock
             }
 
@@ -140,6 +138,11 @@ class CatalogRepository(
                 throw e
             }
         }
+    }
+
+    private suspend fun isAutomaticRefreshDue(): Boolean {
+        val lastSyncedAt = catalogDao.getLastSyncedAt() ?: return true
+        return System.currentTimeMillis() - lastSyncedAt >= AUTO_REFRESH_INTERVAL_MILLIS
     }
 
     private suspend fun replaceCatalog(payload: CatalogPayload): Long =
@@ -362,7 +365,7 @@ class CatalogRepository(
     }
 
     private companion object {
-        const val MIN_REFRESH_INTERVAL_MILLIS = 15 * 60 * 1000L
+        const val AUTO_REFRESH_INTERVAL_MILLIS = 24 * 60 * 60 * 1000L
         const val INSERT_CHUNK_SIZE = 500
         val NON_ALPHANUMERIC = Regex("[^\\p{L}\\p{N}]+")
     }

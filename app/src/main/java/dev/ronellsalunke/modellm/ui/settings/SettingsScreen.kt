@@ -34,12 +34,6 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
     val version = remember(context) { context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "–" }
     val updated = rememberRelativeTime(state.lastSyncedAt)
     val wallpaperSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-    val syncIntervalMillis = 15 * 60 * 1000L
-    val now = System.currentTimeMillis()
-    val lastSyncedAt = state.lastSyncedAt
-    val canSync = lastSyncedAt == null || now - lastSyncedAt >= syncIntervalMillis
-    val remainingMinutes = lastSyncedAt
-        ?.let { last -> ((syncIntervalMillis - (now - last)).coerceAtLeast(0) / 60_000L + 1L).coerceAtLeast(1L) }
     Column(Modifier.fillMaxSize().background(LocalAppPalette.current.background)) {
         SmallBackTopAppBar("Settings", onBack)
         CatalogDivider()
@@ -69,7 +63,7 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Text("Last updated: $updated", modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
                         Button(onClick = viewModel::refresh,
-                            enabled = canSync && state.syncState !is SyncState.Running,
+                            enabled = state.syncState !is SyncState.Running,
                             shape = MaterialTheme.shapes.small) {
                             Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(6.dp))
@@ -77,21 +71,13 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
                         }
                     }
                     Text(when (val sync = state.syncState) {
-                        SyncState.Idle -> when {
-                            state.lastSyncedAt == null -> "Ready to sync"
-                            canSync -> "Catalog can be refreshed"
-                            else -> "Catalog is up to date"
-                        }
+                        SyncState.Idle -> if (state.lastSyncedAt == null) "Ready to sync" else "Catalog can be refreshed"
                         SyncState.Running -> "Refreshing catalog…"
                         is SyncState.Success -> "Catalog is up to date"
                         is SyncState.Failed -> "Couldn't refresh: ${sync.message}"
                     }, style = MaterialTheme.typography.bodySmall, color = LocalAppPalette.current.textSecondary)
                     Text(
-                        if (!canSync && state.syncState !is SyncState.Running) {
-                            "Next refresh available in $remainingMinutes min."
-                        } else {
-                            "Refreshes have a 15-minute minimum interval. The catalog also refreshes daily when you're connected."
-                        },
+                        "The catalog refreshes daily when you're connected. Tap Sync now or pull down to refresh at any time.",
                         style = MaterialTheme.typography.bodySmall, color = LocalAppPalette.current.textSecondary,
                     )
                 }

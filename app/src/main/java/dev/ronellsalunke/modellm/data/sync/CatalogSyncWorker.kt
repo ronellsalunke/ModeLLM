@@ -16,17 +16,19 @@ class CatalogSyncWorker(
     private val repository: CatalogRepository by inject()
 
     override suspend fun doWork(): Result {
+        val force = inputData.getBoolean(KEY_FORCE_REFRESH, false)
         return try {
-            repository.refresh()
+            repository.refresh(force = force)
             Result.success()
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            if (runAttemptCount < MAX_RETRIES) Result.retry() else Result.failure()
+            if (!force && runAttemptCount < MAX_RETRIES) Result.retry() else Result.failure()
         }
     }
 
-    private companion object {
-        const val MAX_RETRIES = 3
+    companion object {
+        const val KEY_FORCE_REFRESH = "force_refresh"
+        private const val MAX_RETRIES = 3
     }
 }
