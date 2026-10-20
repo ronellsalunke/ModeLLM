@@ -11,6 +11,8 @@ import dev.ronellsalunke.modellm.data.sync.CatalogSyncScheduler
 import java.io.IOException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
@@ -31,9 +33,17 @@ class SettingsViewModel(
 ) : ViewModel() {
     private val error = MutableStateFlow<String?>(null)
     private val settingsLoaded = MutableStateFlow(false)
+
+    val settings: StateFlow<AppSettings> =
+        repository.settings
+            .onEach { settingsLoaded.value = true }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, AppSettings())
+
+    val isSettingsLoaded: StateFlow<Boolean> = settingsLoaded.asStateFlow()
+
     val uiState =
         combine(
-                repository.settings.onEach { settingsLoaded.value = true },
+                settings,
                 catalog.syncState,
                 catalog.observeLastSyncedAt(),
                 error,
