@@ -55,7 +55,7 @@ fun ModelRow(model: Model, onClick: () -> Unit) {
             .heightIn(min = 96.dp)
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
     ) {
         ModelHeaderRow(model)
         Text(

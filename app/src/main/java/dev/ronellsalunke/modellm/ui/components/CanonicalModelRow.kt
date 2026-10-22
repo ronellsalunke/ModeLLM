@@ -101,7 +101,7 @@ fun CanonicalModelRow(model: CanonicalModel, onClick: () -> Unit) {
             .heightIn(min = 64.dp)
             .clickable(onClick = onClick)
             .padding(horizontal = Dimens.lg, vertical = Dimens.sm),
-        verticalArrangement = Arrangement.spacedBy(3.dp),
+        verticalArrangement = Arrangement.spacedBy(3.dp, Alignment.CenterVertically),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
