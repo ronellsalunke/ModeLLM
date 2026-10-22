@@ -43,6 +43,8 @@ import dev.ronellsalunke.modellm.ui.components.FactGrid
 import dev.ronellsalunke.modellm.ui.components.SectionHeader
 import dev.ronellsalunke.modellm.ui.components.capabilities
 import dev.ronellsalunke.modellm.ui.components.rememberDetailScrollBehavior
+import dev.ronellsalunke.modellm.ui.components.safeDrawingBottomPadding
+import dev.ronellsalunke.modellm.ui.components.safeDrawingHorizontalPadding
 import dev.ronellsalunke.modellm.ui.theme.Dimens
 import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
 import dev.ronellsalunke.modellm.ui.theme.MonoStyle
@@ -75,6 +77,7 @@ fun CanonicalModelDetailScreen(
     Column(
         Modifier.fillMaxSize()
             .background(LocalAppPalette.current.background)
+            .safeDrawingHorizontalPadding()
             .nestedScroll(scrollBehavior.nestedScrollConnection)
     ) {
         DetailTopAppBar(
@@ -117,7 +120,10 @@ private fun CanonicalModelDetailContent(
     modifier: Modifier = Modifier,
 ) {
     val facts = remember(model) { canonicalModelFacts(model) }
-    LazyColumn(modifier, contentPadding = PaddingValues(bottom = Dimens.xl)) {
+    LazyColumn(
+        modifier,
+        contentPadding = PaddingValues(bottom = Dimens.xl + safeDrawingBottomPadding()),
+    ) {
         item {
             CanonicalModelHeader(model)
             FactGrid(facts, compactColumns = CompactGridColumns)

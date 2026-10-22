@@ -1,5 +1,6 @@
 package dev.ronellsalunke.modellm.ui.providers
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,6 +37,8 @@ import dev.ronellsalunke.modellm.ui.components.HomeTopAppBar
 import dev.ronellsalunke.modellm.ui.components.ProviderLogo
 import dev.ronellsalunke.modellm.ui.components.SearchField
 import dev.ronellsalunke.modellm.ui.components.SyncBanner
+import dev.ronellsalunke.modellm.ui.components.navigationBarBottomPadding
+import dev.ronellsalunke.modellm.ui.components.tabScreenPadding
 import dev.ronellsalunke.modellm.ui.theme.Dimens
 import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
 import dev.ronellsalunke.modellm.ui.theme.MonoStyle
@@ -54,7 +57,7 @@ fun ProvidersListScreen(
         remember(state.providers, query) {
             state.providers.filter { it.name.contains(query, true) || it.id.contains(query, true) }
         }
-    Column(Modifier.fillMaxSize()) {
+    Column(Modifier.tabScreenPadding().background(LocalAppPalette.current.background)) {
         HomeTopAppBar(title = "Providers")
         CatalogDivider()
         SearchField(
@@ -71,7 +74,8 @@ fun ProvidersListScreen(
         ) {
             LazyColumn(
                 Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = FloatingTabBarClearance),
+                contentPadding =
+                    PaddingValues(bottom = FloatingTabBarClearance + navigationBarBottomPadding()),
             ) {
                 if (providers.isEmpty()) {
                     item {

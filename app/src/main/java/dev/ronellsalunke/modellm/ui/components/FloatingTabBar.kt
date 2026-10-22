@@ -1,5 +1,12 @@
 package dev.ronellsalunke.modellm.ui.components
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.exclude
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarDefaults
@@ -39,7 +46,15 @@ fun FloatingTabBar(
 ) {
     HorizontalFloatingToolbar(
         expanded = true,
-        modifier = modifier.selectableGroup(),
+        modifier =
+            modifier
+                .windowInsetsPadding(
+                    // Ignore the keyboard so the bar stays behind it while you type.
+                    WindowInsets.safeDrawing
+                        .exclude(WindowInsets.ime)
+                        .only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
+                )
+                .selectableGroup(),
     ) {
         items.forEachIndexed { index, item ->
             val selected = index == selectedIndex

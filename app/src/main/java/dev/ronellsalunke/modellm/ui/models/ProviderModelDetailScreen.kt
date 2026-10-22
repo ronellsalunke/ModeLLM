@@ -39,6 +39,8 @@ import dev.ronellsalunke.modellm.ui.components.SectionHeader
 import dev.ronellsalunke.modellm.ui.components.StatusChip
 import dev.ronellsalunke.modellm.ui.components.capabilities
 import dev.ronellsalunke.modellm.ui.components.rememberDetailScrollBehavior
+import dev.ronellsalunke.modellm.ui.components.safeDrawingBottomPadding
+import dev.ronellsalunke.modellm.ui.components.safeDrawingHorizontalPadding
 import dev.ronellsalunke.modellm.ui.theme.Dimens
 import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
 import dev.ronellsalunke.modellm.ui.theme.MonoLabelStyle
@@ -65,6 +67,7 @@ fun ProviderModelDetailScreen(providerId: String, modelId: String, onBack: () ->
     Column(
         Modifier.fillMaxSize()
             .background(LocalAppPalette.current.background)
+            .safeDrawingHorizontalPadding()
             .nestedScroll(scrollBehavior.nestedScrollConnection)
     ) {
         DetailTopAppBar(
@@ -106,7 +109,10 @@ private fun ProviderModelDetailContent(
 ) {
     val facts = remember(model) { providerModelFacts(model) }
     val capabilities = remember(model) { model.capabilities() }
-    LazyColumn(modifier, contentPadding = PaddingValues(bottom = Dimens.xl)) {
+    LazyColumn(
+        modifier,
+        contentPadding = PaddingValues(bottom = Dimens.xl + safeDrawingBottomPadding()),
+    ) {
         item {
             ProviderModelHeader(model)
             FactGrid(facts, compactColumns = CompactGridColumns)

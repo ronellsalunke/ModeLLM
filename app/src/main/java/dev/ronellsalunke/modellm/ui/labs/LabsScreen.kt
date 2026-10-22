@@ -41,6 +41,10 @@ import dev.ronellsalunke.modellm.ui.components.rememberDetailScrollBehavior
 import dev.ronellsalunke.modellm.ui.components.SearchField
 import dev.ronellsalunke.modellm.ui.components.SectionHeader
 import dev.ronellsalunke.modellm.ui.components.SyncBanner
+import dev.ronellsalunke.modellm.ui.components.navigationBarBottomPadding
+import dev.ronellsalunke.modellm.ui.components.safeDrawingBottomPadding
+import dev.ronellsalunke.modellm.ui.components.safeDrawingHorizontalPadding
+import dev.ronellsalunke.modellm.ui.components.tabScreenPadding
 import dev.ronellsalunke.modellm.ui.theme.Dimens
 import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
 import dev.ronellsalunke.modellm.ui.theme.MonoLabelStyle
@@ -60,7 +64,9 @@ fun LabsScreen(onLabClick: (String) -> Unit, viewModel: LabsViewModel = koinView
                 query.isBlank() || it.name.contains(query, true) || it.id.contains(query, true)
             }
         }
-    Column(Modifier.fillMaxSize().background(LocalAppPalette.current.background)) {
+    Column(
+        Modifier.tabScreenPadding().background(LocalAppPalette.current.background)
+    ) {
         HomeTopAppBar(title = "Labs")
         CatalogDivider()
         SearchField(
@@ -77,7 +83,8 @@ fun LabsScreen(onLabClick: (String) -> Unit, viewModel: LabsViewModel = koinView
         ) {
             LazyColumn(
                 Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = FloatingTabBarClearance),
+                contentPadding =
+                PaddingValues(bottom = FloatingTabBarClearance + navigationBarBottomPadding()),
             ) {
                 if (filteredLabs.isEmpty()) {
                     item {
@@ -154,7 +161,6 @@ private fun LabRow(lab: Lab, onLabClick: (String) -> Unit) {
     CatalogDivider()
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LabDetailScreen(labId: String, onBack: () -> Unit, onModelClick: (String) -> Unit) {
     val viewModel =
@@ -162,9 +168,11 @@ fun LabDetailScreen(labId: String, onBack: () -> Unit, onModelClick: (String) ->
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val lab = state.lab
     val scrollBehavior = rememberDetailScrollBehavior()
+    val listPadding = PaddingValues(bottom = Dimens.xl + safeDrawingBottomPadding())
     Column(
         Modifier.fillMaxSize()
             .background(LocalAppPalette.current.background)
+            .safeDrawingHorizontalPadding()
             .nestedScroll(scrollBehavior.nestedScrollConnection)
     ) {
         DetailTopAppBar(
@@ -181,7 +189,7 @@ fun LabDetailScreen(labId: String, onBack: () -> Unit, onModelClick: (String) ->
                 else -> EmptyState("Lab not found")
             }
         } else {
-            LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = Dimens.xl)) {
+            LazyColumn(Modifier.weight(1f), contentPadding = listPadding) {
                 item {
                     Column(
                         Modifier.padding(Dimens.lg),

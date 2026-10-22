@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.automirrored.filled.List
@@ -13,7 +12,8 @@ import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarDefaults
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -75,13 +75,14 @@ private const val BackSwipeMinScale = 0.92f
 @Composable
 fun ModeLLMApp() {
     val navController = rememberNavController()
-    Scaffold(
+    Surface(
         modifier = Modifier.fillMaxSize(),
-        containerColor = LocalAppPalette.current.background,
-    ) { innerPadding ->
+        color = LocalAppPalette.current.background,
+        contentColor = MaterialTheme.colorScheme.onBackground,
+    ) {
         AppNavHost(
             navController = navController,
-            modifier = Modifier.padding(innerPadding),
+            modifier = Modifier.fillMaxSize(),
         )
     }
 }

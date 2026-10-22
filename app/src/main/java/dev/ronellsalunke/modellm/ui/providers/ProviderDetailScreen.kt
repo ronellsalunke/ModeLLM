@@ -24,6 +24,8 @@ import dev.ronellsalunke.modellm.ui.components.ModelRow
 import dev.ronellsalunke.modellm.ui.components.ProviderFacts
 import dev.ronellsalunke.modellm.ui.components.SectionHeader
 import dev.ronellsalunke.modellm.ui.components.rememberDetailScrollBehavior
+import dev.ronellsalunke.modellm.ui.components.safeDrawingBottomPadding
+import dev.ronellsalunke.modellm.ui.components.safeDrawingHorizontalPadding
 import dev.ronellsalunke.modellm.ui.theme.Dimens
 import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
 import org.koin.androidx.compose.koinViewModel
@@ -43,6 +45,7 @@ fun ProviderDetailScreen(providerId: String, onBack: () -> Unit, onModelClick: (
     Column(
         Modifier.fillMaxSize()
             .background(LocalAppPalette.current.background)
+            .safeDrawingHorizontalPadding()
             .nestedScroll(scrollBehavior.nestedScrollConnection)
     ) {
         DetailTopAppBar(
@@ -60,7 +63,10 @@ fun ProviderDetailScreen(providerId: String, onBack: () -> Unit, onModelClick: (
                     EmptyState("Provider not found", "This provider is not in the saved catalog.")
             }
         } else
-            LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = Dimens.xl)) {
+            LazyColumn(
+                Modifier.weight(1f),
+                contentPadding = PaddingValues(bottom = Dimens.xl + safeDrawingBottomPadding()),
+            ) {
                 item {
                     Spacer(Modifier.height(Dimens.lg))
                     ProviderFacts(provider, showIdentity = false)

@@ -2,7 +2,6 @@ package dev.ronellsalunke.modellm.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,7 +30,6 @@ fun HomeTopAppBar(
         title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         navigationIcon = { leading?.invoke() },
         actions = actions,
-        windowInsets = WindowInsets(0, 0, 0, 0),
         modifier = Modifier.background(LocalAppPalette.current.background),
         colors = appTopBarColors(),
     )
@@ -47,7 +45,6 @@ fun DetailTopAppBar(
         title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         navigationIcon = { BackIconButton(onBack) },
         scrollBehavior = scrollBehavior,
-        windowInsets = WindowInsets(0, 0, 0, 0),
         modifier = Modifier.background(LocalAppPalette.current.background),
         colors = appTopBarColors(),
     )
@@ -58,7 +55,6 @@ fun SmallBackTopAppBar(title: String, onBack: () -> Unit) {
     TopAppBar(
         title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         navigationIcon = { BackIconButton(onBack) },
-        windowInsets = WindowInsets(0, 0, 0, 0),
         modifier = Modifier.background(LocalAppPalette.current.background),
         colors = appTopBarColors(),
     )

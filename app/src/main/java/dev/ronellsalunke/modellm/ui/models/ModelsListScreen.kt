@@ -1,5 +1,6 @@
 package dev.ronellsalunke.modellm.ui.models
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -59,7 +60,10 @@ import dev.ronellsalunke.modellm.ui.components.FloatingTabBarClearance
 import dev.ronellsalunke.modellm.ui.components.HomeTopAppBar
 import dev.ronellsalunke.modellm.ui.components.SearchField
 import dev.ronellsalunke.modellm.ui.components.SyncBanner
+import dev.ronellsalunke.modellm.ui.components.navigationBarBottomPadding
+import dev.ronellsalunke.modellm.ui.components.tabScreenPadding
 import dev.ronellsalunke.modellm.ui.theme.Dimens
+import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
 import org.koin.androidx.compose.koinViewModel
 
 private val ChipCloseIconSize = 16.dp
@@ -92,7 +96,8 @@ fun ModelsListScreen(
     val activeFilters = remember(state.filters, state.providers, state.labs) {
         state.filters.activeFilters(state.providers, state.labs)
     }
-    Column(Modifier.fillMaxSize()) {
+    val background = LocalAppPalette.current.background
+    Column(Modifier.tabScreenPadding().background(background)) {
         ModelsTopBar(
             sort = state.sort,
             activeFiltersCount = activeFilters.size,
@@ -283,7 +288,8 @@ private fun ModelsListContent(
     ) {
         LazyColumn(
             Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = FloatingTabBarClearance),
+            contentPadding =
+                PaddingValues(bottom = FloatingTabBarClearance + navigationBarBottomPadding()),
         ) {
             if (state.models.isNullOrEmpty()) {
                 item {

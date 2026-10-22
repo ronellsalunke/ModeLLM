@@ -47,6 +47,8 @@ import dev.ronellsalunke.modellm.ui.components.rememberRelativeTime
 import dev.ronellsalunke.modellm.ui.components.SectionHeader
 import dev.ronellsalunke.modellm.ui.components.SingleChoiceButtonGroup
 import dev.ronellsalunke.modellm.ui.components.SmallBackTopAppBar
+import dev.ronellsalunke.modellm.ui.components.safeDrawingBottomPadding
+import dev.ronellsalunke.modellm.ui.components.safeDrawingHorizontalPadding
 import dev.ronellsalunke.modellm.ui.theme.Dimens
 import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
 import dev.ronellsalunke.modellm.ui.theme.MonoStyle
@@ -68,10 +70,17 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
         }
     val updated = rememberRelativeTime(state.lastSyncedAt)
     val wallpaperSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-    Column(Modifier.fillMaxSize().background(LocalAppPalette.current.background)) {
+    Column(
+        Modifier.fillMaxSize()
+            .background(LocalAppPalette.current.background)
+            .safeDrawingHorizontalPadding()
+    ) {
         SmallBackTopAppBar("Settings", onBack)
         CatalogDivider()
-        LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(bottom = Dimens.xl)) {
+        LazyColumn(
+            Modifier.weight(1f),
+            contentPadding = PaddingValues(bottom = Dimens.xl + safeDrawingBottomPadding()),
+        ) {
             item {
                 AppearanceSettingsSection(
                     state = state,
