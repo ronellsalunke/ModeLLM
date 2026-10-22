@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -27,6 +26,7 @@ import dev.ronellsalunke.modellm.ui.theme.Dimens
 import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
 import dev.ronellsalunke.modellm.ui.util.relativeTime
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun rememberRelativeTime(timestamp: Long?): String {
@@ -34,7 +34,7 @@ fun rememberRelativeTime(timestamp: Long?): String {
         produceState(System.currentTimeMillis(), timestamp) {
             while (true) {
                 value = System.currentTimeMillis()
-                delay(60_000)
+                delay(60_000.milliseconds)
             }
         }
     return timestamp?.let { relativeTime(it, now) } ?: "Never"
@@ -124,7 +124,6 @@ fun EmptyState(
 fun ErrorState(message: String, onRetry: () -> Unit) =
     EmptyState("Couldn't load the catalog", message, "Retry", onRetry)
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppPullToRefreshBox(
     isRefreshing: Boolean,

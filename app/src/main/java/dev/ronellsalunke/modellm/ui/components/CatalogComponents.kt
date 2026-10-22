@@ -42,8 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import dev.ronellsalunke.modellm.ui.theme.Dimens
 import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
-import dev.ronellsalunke.modellm.ui.theme.MonoStyle
-import dev.ronellsalunke.modellm.ui.util.pricePair
 
 @Composable
 fun CatalogDivider() =
@@ -134,11 +132,6 @@ private fun SearchClearButton(onClick: () -> Unit) {
             modifier = Modifier.size(18.dp),
         )
     }
-}
-
-@Composable
-fun PriceText(input: Double?, output: Double?) {
-    Text(pricePair(input, output), style = MonoStyle, color = LocalAppPalette.current.textSecondary)
 }
 
 @Composable

@@ -1,6 +1,5 @@
 package dev.ronellsalunke.modellm.ui.navigation
 
-import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -10,7 +9,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.ui.unit.IntOffset
-import androidx.navigation.NavBackStackEntry
 import androidx.navigationevent.NavigationEvent
 
 private const val PushedMotionDurationMillis = 300
@@ -32,26 +30,26 @@ private fun slideOutTo(fraction: Float): ExitTransition =
 private fun swipeDirection(swipeEdge: Int): Float =
     if (swipeEdge == NavigationEvent.EDGE_RIGHT) -1f else 1f
 
-internal fun AnimatedContentTransitionScope<NavBackStackEntry>.pushedEnter(): EnterTransition =
+internal fun pushedEnter(): EnterTransition =
     slideInFrom(EnterOffsetFraction)
 
-internal fun AnimatedContentTransitionScope<NavBackStackEntry>.pushedExit(): ExitTransition =
+internal fun pushedExit(): ExitTransition =
     slideOutTo(ExitOffsetFraction)
 
-internal fun AnimatedContentTransitionScope<NavBackStackEntry>.pushedPopEnter(): EnterTransition =
+internal fun pushedPopEnter(): EnterTransition =
     slideInFrom(PopEnterOffsetFraction)
 
-internal fun AnimatedContentTransitionScope<NavBackStackEntry>.pushedPopExit(): ExitTransition =
+internal fun pushedPopExit(): ExitTransition =
     slideOutHorizontally(PushedOffsetSpec) { it }
 
-internal fun AnimatedContentTransitionScope<NavBackStackEntry>.pushedPredictivePopEnter(
+internal fun pushedPredictivePopEnter(
     swipeEdge: Int,
 ): EnterTransition {
     val direction = swipeDirection(swipeEdge)
     return slideInFrom(PopEnterOffsetFraction * direction)
 }
 
-internal fun AnimatedContentTransitionScope<NavBackStackEntry>.pushedPredictivePopExit(
+internal fun pushedPredictivePopExit(
     swipeEdge: Int,
 ): ExitTransition {
     val direction = swipeDirection(swipeEdge)

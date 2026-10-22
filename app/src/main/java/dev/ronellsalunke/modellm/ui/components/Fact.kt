@@ -53,7 +53,7 @@ fun FactGrid(facts: List<Fact>, compactColumns: Int = 1) {
                 else -> 2
             }
         val rows =
-            buildList<List<Fact>> {
+            buildList {
                 var row = mutableListOf<Fact>()
                 facts.forEach { fact ->
                     if (fact.fullWidth || fact.newRow) {

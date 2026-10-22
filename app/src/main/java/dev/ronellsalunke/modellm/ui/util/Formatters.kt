@@ -38,8 +38,6 @@ fun price(value: Double?): String =
         "$" + BigDecimal.valueOf(it).stripTrailingZeros().toPlainString()
     } ?: "–"
 
-fun pricePair(input: Double?, output: Double?): String = "${price(input)} / ${price(output)}"
-
 fun compactPrice(value: Double?): String =
     when {
         value == null -> "–"

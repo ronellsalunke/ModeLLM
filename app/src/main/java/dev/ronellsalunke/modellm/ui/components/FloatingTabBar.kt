@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
@@ -26,7 +25,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import dev.ronellsalunke.modellm.ui.theme.Dimens
 
 /** Bottom space the lists must leave so their last row can scroll above the floating bar. */
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 val FloatingTabBarClearance =
     FloatingToolbarDefaults.ContainerSize + FloatingToolbarDefaults.ScreenOffset + Dimens.sm
 
@@ -36,7 +34,6 @@ data class FloatingTabItem(val label: String, val icon: ImageVector)
  * Floating pill navigation bar built on Material 3's [HorizontalFloatingToolbar] and
  * [ToggleButton]. The selected item shows an icon and uses the toolbar's default container styling.
  */
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun FloatingTabBar(
     items: List<FloatingTabItem>,

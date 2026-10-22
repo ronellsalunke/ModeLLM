@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import kotlin.time.Duration.Companion.milliseconds
 
 class MainActivity : ComponentActivity() {
     private val settingsViewModel: SettingsViewModel by viewModel()
@@ -29,7 +30,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         lifecycleScope.launch {
             val loaded =
-                withTimeoutOrNull(SPLASH_TIMEOUT_MS) {
+                withTimeoutOrNull(SPLASH_TIMEOUT_MS.milliseconds) {
                     settingsViewModel.isSettingsLoaded.first { it }
                 }
             if (loaded == null) {

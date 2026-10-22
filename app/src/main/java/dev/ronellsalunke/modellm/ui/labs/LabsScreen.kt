@@ -119,7 +119,7 @@ private fun LabsEmptyState(
     when {
         failure != null && labs.isNullOrEmpty() ->
             ErrorState(failure.message, onRetry)
-        labs == null || (labs.isNullOrEmpty() && lastSyncedAt == null) ->
+        labs == null || (labs.isEmpty() && lastSyncedAt == null) ->
             EmptyState("Loading labs…")
         query.isNotBlank() ->
             EmptyState(

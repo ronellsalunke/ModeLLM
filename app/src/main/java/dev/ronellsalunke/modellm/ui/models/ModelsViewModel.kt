@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlin.time.Duration.Companion.milliseconds
 
 data class ModelsUiState(
     val filters: ModelFilters = ModelFilters(),
@@ -44,7 +45,8 @@ class ModelsViewModel(
     private val query = MutableStateFlow("")
     private val filters = MutableStateFlow(ModelFilters())
     private val sort = MutableStateFlow(ModelSort.Newest)
-    private val selection = combine(query.debounce(150), filters, sort, ::ModelSelection)
+    private val selection =
+        combine(query.debounce(150.milliseconds), filters, sort, ::ModelSelection)
     private val results =
         selection
             .flatMapLatest { selected ->
