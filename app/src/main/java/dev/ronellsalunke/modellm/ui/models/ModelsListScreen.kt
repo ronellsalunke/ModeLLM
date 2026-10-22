@@ -102,15 +102,13 @@ fun ModelsListScreen(
             onDismissKeyboard = dismissKeyboard,
         )
         CatalogDivider()
-        SearchField(
+        ModelsSearchField(
             query = query,
             onQueryChange = {
                 query = it
                 viewModel.setQuery(it)
             },
-            label = "Search models, labs, providers",
-            modifier =
-                Modifier.fillMaxWidth().padding(horizontal = Dimens.sm, vertical = Dimens.sm),
+            filtersVisible = activeFilters.isNotEmpty(),
         )
         ActiveFiltersRow(activeFilters = activeFilters, onRemoveFilter = viewModel::setFilters)
         SyncBanner(state.lastSyncedAt, state.syncState, viewModel::refresh)
@@ -136,6 +134,28 @@ fun ModelsListScreen(
             onUpdateFilters = viewModel::updateFilters,
         )
     }
+}
+
+@Composable
+private fun ModelsSearchField(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    filtersVisible: Boolean,
+) {
+    SearchField(
+        query = query,
+        onQueryChange = onQueryChange,
+        label = "Search models, labs, providers",
+        modifier =
+            Modifier.fillMaxWidth()
+                .padding(
+                    start = Dimens.sm,
+                    top = Dimens.sm,
+                    end = Dimens.sm,
+                    // The chip row adds an 8dp touch-target inset above its visible chip.
+                    bottom = if (filtersVisible) 0.dp else Dimens.sm,
+                ),
+    )
 }
 
 @Composable
