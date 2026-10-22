@@ -24,11 +24,8 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -76,7 +73,6 @@ private fun ModelSort.label(): String =
         ModelSort.Name -> "Name"
     }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModelsListScreen(
     onModelClick: (CanonicalModel) -> Unit,
@@ -171,7 +167,7 @@ private fun ModelsTopBar(
                 onDismissKeyboard()
                 onOpenFilters()
             }
-            FilledTonalIconButton(onClick = onSettings, shapes = IconButtonDefaults.shapes()) {
+            FilledTonalIconButton(onClick = onSettings) {
                 Icon(Icons.Default.Settings, "Settings")
             }
         },
@@ -186,7 +182,7 @@ private fun SortDropdownAction(
 ) {
     var sortMenu by remember { mutableStateOf(false) }
     Box {
-        IconButton(
+        FilledTonalIconButton(
             onClick = {
                 onBeforeOpen()
                 sortMenu = true
@@ -225,7 +221,7 @@ private fun FilterBadgeAction(
     activeFilterCount: Int,
     onClick: () -> Unit,
 ) {
-    IconButton(onClick = onClick) {
+    FilledTonalIconButton(onClick = onClick) {
         BadgedBox(
             badge = {
                 if (activeFilterCount > 0) {
@@ -271,7 +267,6 @@ private fun ActiveFiltersRow(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ModelsListContent(
     state: ModelsUiState,

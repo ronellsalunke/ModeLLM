@@ -1,11 +1,11 @@
 package dev.ronellsalunke.modellm.ui.components
 
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MediumFlexibleTopAppBar
@@ -17,6 +17,7 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
 
@@ -40,10 +41,12 @@ fun DetailTopAppBar(
     title: String,
     onBack: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
+    actions: @Composable RowScope.() -> Unit = {},
 ) {
     MediumFlexibleTopAppBar(
         title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         navigationIcon = { BackIconButton(onBack) },
+        actions = actions,
         scrollBehavior = scrollBehavior,
         modifier = Modifier.background(LocalAppPalette.current.background),
         colors = appTopBarColors(),
@@ -64,6 +67,23 @@ fun SmallBackTopAppBar(title: String, onBack: () -> Unit) {
 fun BackIconButton(onBack: () -> Unit) {
     FilledTonalIconButton(onClick = onBack) {
         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+    }
+}
+
+@Composable
+fun ShareIconButton(url: String) {
+    val context = LocalContext.current
+    FilledTonalIconButton(
+        onClick = {
+            val send =
+                Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, url)
+                }
+            context.startActivity(Intent.createChooser(send, null))
+        },
+    ) {
+        Icon(Icons.Default.Share, contentDescription = "Share")
     }
 }
 

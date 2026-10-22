@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -41,6 +40,7 @@ import dev.ronellsalunke.modellm.ui.components.ErrorState
 import dev.ronellsalunke.modellm.ui.components.Fact
 import dev.ronellsalunke.modellm.ui.components.FactGrid
 import dev.ronellsalunke.modellm.ui.components.SectionHeader
+import dev.ronellsalunke.modellm.ui.components.ShareIconButton
 import dev.ronellsalunke.modellm.ui.components.capabilities
 import dev.ronellsalunke.modellm.ui.components.rememberDetailScrollBehavior
 import dev.ronellsalunke.modellm.ui.components.safeDrawingBottomPadding
@@ -48,6 +48,7 @@ import dev.ronellsalunke.modellm.ui.components.safeDrawingHorizontalPadding
 import dev.ronellsalunke.modellm.ui.theme.Dimens
 import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
 import dev.ronellsalunke.modellm.ui.theme.MonoStyle
+import dev.ronellsalunke.modellm.ui.util.ModelsDevLinks
 import dev.ronellsalunke.modellm.ui.util.capabilityLabel
 import dev.ronellsalunke.modellm.ui.util.modalityLabel
 import dev.ronellsalunke.modellm.ui.util.tokenLimit
@@ -59,7 +60,6 @@ private const val CompactGridColumns = 2
 private val IconButtonSize = 48.dp
 private val CopyIconSize = 16.dp
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CanonicalModelDetailScreen(
     canonicalId: String,
@@ -84,6 +84,7 @@ fun CanonicalModelDetailScreen(
             title = model?.name ?: "Model",
             onBack = onBack,
             scrollBehavior = scrollBehavior,
+            actions = { ShareIconButton(ModelsDevLinks.model(canonicalId)) },
         )
         CatalogDivider()
         if (model == null) {

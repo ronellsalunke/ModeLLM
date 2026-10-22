@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,6 +39,7 @@ import dev.ronellsalunke.modellm.ui.components.LabLogo
 import dev.ronellsalunke.modellm.ui.components.rememberDetailScrollBehavior
 import dev.ronellsalunke.modellm.ui.components.SearchField
 import dev.ronellsalunke.modellm.ui.components.SectionHeader
+import dev.ronellsalunke.modellm.ui.components.ShareIconButton
 import dev.ronellsalunke.modellm.ui.components.SyncBanner
 import dev.ronellsalunke.modellm.ui.components.navigationBarBottomPadding
 import dev.ronellsalunke.modellm.ui.components.safeDrawingBottomPadding
@@ -50,10 +50,10 @@ import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
 import dev.ronellsalunke.modellm.ui.theme.MonoLabelStyle
 import dev.ronellsalunke.modellm.ui.theme.MonoStyle
 import dev.ronellsalunke.modellm.ui.util.pluralized
+import dev.ronellsalunke.modellm.ui.util.ModelsDevLinks
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LabsScreen(onLabClick: (String) -> Unit, viewModel: LabsViewModel = koinViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -179,6 +179,7 @@ fun LabDetailScreen(labId: String, onBack: () -> Unit, onModelClick: (String) ->
             title = lab?.name ?: labId,
             onBack = onBack,
             scrollBehavior = scrollBehavior,
+            actions = { ShareIconButton(ModelsDevLinks.lab(labId)) },
         )
         CatalogDivider()
         if (lab == null) {
@@ -200,9 +201,8 @@ fun LabDetailScreen(labId: String, onBack: () -> Unit, onModelClick: (String) ->
                             style = MonoStyle,
                             color = LocalAppPalette.current.textTertiary,
                         )
-                        lab.description?.let {
-                            Text(it, style = MaterialTheme.typography.bodyLarge)
-                        }
+                        lab.description
+                            ?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
                     }
                     FactGrid(
                         listOf(

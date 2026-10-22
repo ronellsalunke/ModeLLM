@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,9 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.ronellsalunke.modellm.data.model.Capability
+import dev.ronellsalunke.modellm.data.model.Modality
 import dev.ronellsalunke.modellm.data.model.Model
 import dev.ronellsalunke.modellm.data.model.ModelCost
-import dev.ronellsalunke.modellm.data.model.Modality
 import dev.ronellsalunke.modellm.data.model.Provider
 import dev.ronellsalunke.modellm.data.model.ReasoningOption
 import dev.ronellsalunke.modellm.data.repository.SyncState
@@ -36,6 +35,7 @@ import dev.ronellsalunke.modellm.ui.components.FactGrid
 import dev.ronellsalunke.modellm.ui.components.ModalityTile
 import dev.ronellsalunke.modellm.ui.components.ProviderFacts
 import dev.ronellsalunke.modellm.ui.components.SectionHeader
+import dev.ronellsalunke.modellm.ui.components.ShareIconButton
 import dev.ronellsalunke.modellm.ui.components.StatusChip
 import dev.ronellsalunke.modellm.ui.components.capabilities
 import dev.ronellsalunke.modellm.ui.components.rememberDetailScrollBehavior
@@ -45,6 +45,7 @@ import dev.ronellsalunke.modellm.ui.theme.Dimens
 import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
 import dev.ronellsalunke.modellm.ui.theme.MonoLabelStyle
 import dev.ronellsalunke.modellm.ui.theme.MonoStyle
+import dev.ronellsalunke.modellm.ui.util.ModelsDevLinks
 import dev.ronellsalunke.modellm.ui.util.groupedNumber
 import dev.ronellsalunke.modellm.ui.util.price
 import dev.ronellsalunke.modellm.ui.util.tokenLimit
@@ -53,7 +54,6 @@ import org.koin.core.parameter.parametersOf
 
 private const val CompactGridColumns = 2
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProviderModelDetailScreen(providerId: String, modelId: String, onBack: () -> Unit) {
     val viewModel =
@@ -63,6 +63,11 @@ fun ProviderModelDetailScreen(providerId: String, modelId: String, onBack: () ->
         )
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val model = state.model
+    val shareUrl =
+        model?.let { loaded ->
+            loaded.canonicalModelId?.let { ModelsDevLinks.model(it) }
+                ?: ModelsDevLinks.provider(providerId)
+        }
     val scrollBehavior = rememberDetailScrollBehavior()
     Column(
         Modifier.fillMaxSize()
@@ -74,6 +79,7 @@ fun ProviderModelDetailScreen(providerId: String, modelId: String, onBack: () ->
             title = model?.name ?: "Model",
             onBack = onBack,
             scrollBehavior = scrollBehavior,
+            actions = { shareUrl?.let { ShareIconButton(it) } },
         )
         CatalogDivider()
         if (model == null) {

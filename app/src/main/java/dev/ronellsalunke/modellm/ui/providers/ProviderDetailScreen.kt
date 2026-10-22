@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -23,15 +22,16 @@ import dev.ronellsalunke.modellm.ui.components.ErrorState
 import dev.ronellsalunke.modellm.ui.components.ModelRow
 import dev.ronellsalunke.modellm.ui.components.ProviderFacts
 import dev.ronellsalunke.modellm.ui.components.SectionHeader
+import dev.ronellsalunke.modellm.ui.components.ShareIconButton
 import dev.ronellsalunke.modellm.ui.components.rememberDetailScrollBehavior
 import dev.ronellsalunke.modellm.ui.components.safeDrawingBottomPadding
 import dev.ronellsalunke.modellm.ui.components.safeDrawingHorizontalPadding
 import dev.ronellsalunke.modellm.ui.theme.Dimens
 import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
+import dev.ronellsalunke.modellm.ui.util.ModelsDevLinks
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProviderDetailScreen(providerId: String, onBack: () -> Unit, onModelClick: (Model) -> Unit) {
     val viewModel =
@@ -52,6 +52,7 @@ fun ProviderDetailScreen(providerId: String, onBack: () -> Unit, onModelClick: (
             title = provider?.name ?: providerId,
             onBack = onBack,
             scrollBehavior = scrollBehavior,
+            actions = { ShareIconButton(ModelsDevLinks.provider(providerId)) },
         )
         CatalogDivider()
         if (provider == null) {
