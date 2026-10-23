@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,7 +22,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.text.style.TextOverflow
@@ -70,14 +68,12 @@ fun LabsScreen(onLabClick: (String) -> Unit, viewModel: LabsViewModel = koinView
                 query.isBlank() || it.name.contains(query, true) || it.id.contains(query, true)
             }
         }
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val searchFocusRequester = remember { FocusRequester() }
     Column(
         Modifier.tabScreenPadding().background(LocalAppPalette.current.background)
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
             .catalogShortcuts(searchFocusRequester, viewModel::refresh)
     ) {
-        HomeTopAppBar(title = "Labs", scrollBehavior = scrollBehavior)
+        HomeTopAppBar(title = "Labs")
         CatalogDivider()
         SearchField(
             query,

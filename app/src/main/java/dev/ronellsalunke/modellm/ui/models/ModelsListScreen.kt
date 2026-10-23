@@ -30,8 +30,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,7 +40,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -94,16 +91,13 @@ fun ModelsListScreen(
     val activeFilters = remember(state.filters, state.providers, state.labs) {
         state.filters.activeFilters(state.providers, state.labs)
     }
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val searchFocusRequester = remember { FocusRequester() }
     Column(
         Modifier.tabScreenPadding().background(LocalAppPalette.current.background)
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
             .catalogShortcuts(searchFocusRequester, viewModel::refresh),
     ) {
         ModelsTopBar(
             sort = state.sort,
-            scrollBehavior = scrollBehavior,
             activeFiltersCount = activeFilters.size,
             onSortSelected = viewModel::setSort,
             onOpenFilters = { filterSheet = true },
@@ -173,7 +167,6 @@ private fun ModelsSearchField(
 @Composable
 private fun ModelsTopBar(
     sort: ModelSort,
-    scrollBehavior: TopAppBarScrollBehavior,
     activeFiltersCount: Int,
     onSortSelected: (ModelSort) -> Unit,
     onOpenFilters: () -> Unit,
@@ -182,7 +175,6 @@ private fun ModelsTopBar(
 ) {
     HomeTopAppBar(
         title = "ModeLLM",
-        scrollBehavior = scrollBehavior,
         leading = {
             Box(Modifier.width(Dimens.xxl + Dimens.sm), contentAlignment = Alignment.Center) {
                 Icon(

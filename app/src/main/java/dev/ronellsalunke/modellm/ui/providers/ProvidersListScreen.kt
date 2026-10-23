@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,7 +25,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -62,14 +60,12 @@ fun ProvidersListScreen(
         remember(state.providers, query) {
             state.providers.filter { it.name.contains(query, true) || it.id.contains(query, true) }
         }
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val searchFocusRequester = remember { FocusRequester() }
     Column(
         Modifier.tabScreenPadding().background(LocalAppPalette.current.background)
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
             .catalogShortcuts(searchFocusRequester, viewModel::refresh),
     ) {
-        HomeTopAppBar(title = "Providers", scrollBehavior = scrollBehavior)
+        HomeTopAppBar(title = "Providers")
         CatalogDivider()
         SearchField(
             query,

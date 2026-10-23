@@ -206,7 +206,17 @@ private fun AppNavDisplay(
     NavigationBackHandler(
         state = backEventState,
         isBackEnabled = backStack.size == 1 && pagerState.currentPage != ModelsPage,
-        onBackCompleted = { scope.launch { pagerState.animateScrollToPage(ModelsPage) } },
+        onBackCompleted = {
+            scope.launch {
+                val distance = pagerState.currentPage - ModelsPage
+                if (distance > 1) {
+                    // Multi-page animation pre-jumps and can settle one page short, so snap.
+                    pagerState.scrollToPage(ModelsPage)
+                } else {
+                    pagerState.animateScrollToPage(ModelsPage)
+                }
+            }
+        },
     )
     Box(
         Modifier.fillMaxSize().graphicsLayer {
