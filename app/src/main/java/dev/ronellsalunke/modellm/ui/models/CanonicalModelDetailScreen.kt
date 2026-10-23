@@ -26,7 +26,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.ClipEntry
@@ -48,7 +47,6 @@ import dev.ronellsalunke.modellm.ui.components.navigationAreaBottomPadding
 import dev.ronellsalunke.modellm.ui.components.SectionHeader
 import dev.ronellsalunke.modellm.ui.components.ShareIconButton
 import dev.ronellsalunke.modellm.ui.components.capabilities
-import dev.ronellsalunke.modellm.ui.components.rememberDetailScrollBehavior
 import dev.ronellsalunke.modellm.ui.components.safeDrawingBottomPadding
 import dev.ronellsalunke.modellm.ui.components.safeDrawingHorizontalPadding
 import dev.ronellsalunke.modellm.ui.theme.Dimens
@@ -78,17 +76,14 @@ fun CanonicalModelDetailScreen(
         )
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val model = state.model
-    val scrollBehavior = rememberDetailScrollBehavior()
     Column(
         Modifier.fillMaxSize()
             .background(LocalAppPalette.current.background)
             .safeDrawingHorizontalPadding()
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
     ) {
         DetailTopAppBar(
             title = model?.name ?: "Model",
             onBack = onBack,
-            scrollBehavior = scrollBehavior,
             actions = { ShareIconButton(ModelsDevLinks.model(canonicalId)) },
         )
         CatalogDivider()

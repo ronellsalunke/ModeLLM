@@ -7,7 +7,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
@@ -41,14 +40,12 @@ fun HomeTopAppBar(
 fun DetailTopAppBar(
     title: String,
     onBack: () -> Unit,
-    scrollBehavior: TopAppBarScrollBehavior,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
-    MediumFlexibleTopAppBar(
+    TopAppBar(
         title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         navigationIcon = { if (LocalDetailShowsBackButton.current) BackIconButton(onBack) },
         actions = actions,
-        scrollBehavior = scrollBehavior,
         modifier = Modifier.background(LocalAppPalette.current.background),
         colors = appTopBarColors(),
     )
@@ -58,7 +55,9 @@ fun DetailTopAppBar(
 fun SmallBackTopAppBar(title: String, onBack: () -> Unit) {
     TopAppBar(
         title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-        navigationIcon = { BackIconButton(onBack) },
+        navigationIcon = {
+            if (LocalDetailShowsBackButton.current) BackIconButton(onBack)
+        },
         modifier = Modifier.background(LocalAppPalette.current.background),
         colors = appTopBarColors(),
     )
@@ -95,7 +94,3 @@ private fun appTopBarColors(): TopAppBarColors =
         containerColor = Color.Transparent,
         scrolledContainerColor = Color.Transparent,
     )
-
-@Composable
-fun rememberDetailScrollBehavior(): TopAppBarScrollBehavior =
-    TopAppBarDefaults.exitUntilCollapsedScrollBehavior()

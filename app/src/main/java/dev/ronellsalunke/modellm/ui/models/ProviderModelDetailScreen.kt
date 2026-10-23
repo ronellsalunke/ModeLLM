@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.ronellsalunke.modellm.data.model.Capability
 import dev.ronellsalunke.modellm.data.model.Modality
@@ -38,7 +37,6 @@ import dev.ronellsalunke.modellm.ui.components.SectionHeader
 import dev.ronellsalunke.modellm.ui.components.ShareIconButton
 import dev.ronellsalunke.modellm.ui.components.StatusChip
 import dev.ronellsalunke.modellm.ui.components.capabilities
-import dev.ronellsalunke.modellm.ui.components.rememberDetailScrollBehavior
 import dev.ronellsalunke.modellm.ui.components.safeDrawingBottomPadding
 import dev.ronellsalunke.modellm.ui.components.navigationAreaBottomPadding
 import dev.ronellsalunke.modellm.ui.components.safeDrawingHorizontalPadding
@@ -69,17 +67,14 @@ fun ProviderModelDetailScreen(providerId: String, modelId: String, onBack: () ->
             loaded.canonicalModelId?.let { ModelsDevLinks.model(it) }
                 ?: ModelsDevLinks.provider(providerId)
         }
-    val scrollBehavior = rememberDetailScrollBehavior()
     Column(
         Modifier.fillMaxSize()
             .background(LocalAppPalette.current.background)
             .safeDrawingHorizontalPadding()
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
     ) {
         DetailTopAppBar(
             title = model?.name ?: "Model",
             onBack = onBack,
-            scrollBehavior = scrollBehavior,
             actions = { shareUrl?.let { ShareIconButton(it) } },
         )
         CatalogDivider()

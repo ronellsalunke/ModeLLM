@@ -62,6 +62,7 @@ import dev.ronellsalunke.modellm.ui.components.LocalCatalogShortcuts
 import dev.ronellsalunke.modellm.ui.components.LocalDetailShowsBackButton
 import dev.ronellsalunke.modellm.ui.components.LocalNavigationAreaBottomPadding
 import dev.ronellsalunke.modellm.ui.components.LocalTabPageActive
+import dev.ronellsalunke.modellm.ui.components.LocalWideLayout
 import dev.ronellsalunke.modellm.ui.components.MediumWidthBreakpoint
 import dev.ronellsalunke.modellm.ui.components.isControlShortcut
 import dev.ronellsalunke.modellm.ui.labs.LabDetailScreen
@@ -150,6 +151,7 @@ private fun AppShell(
             LocalNavigationAreaBottomPadding provides
                 if (showBottomBar) FloatingTabBarClearance else 0.dp,
             LocalDetailShowsBackButton provides showsDetailPane.not(),
+            LocalWideLayout provides useRail,
         ) {
             Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
                 if (useRail) {
@@ -251,7 +253,9 @@ private fun appEntries(
     ) {
         TabsPager(pagerState, navigator, swipeEnabled)
     }
-    entry<SettingsRoute> { SettingsScreen(onBack = { navigator.goBack() }) }
+    entry<SettingsRoute>(metadata = ListDetailSceneStrategy.detailPane()) {
+        SettingsScreen(onBack = { navigator.goBack() })
+    }
     entry<CanonicalModelDetailRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
         CanonicalModelDetailScreen(
             route.canonicalId,

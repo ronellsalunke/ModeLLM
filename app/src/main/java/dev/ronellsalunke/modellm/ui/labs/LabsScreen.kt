@@ -42,7 +42,6 @@ import dev.ronellsalunke.modellm.ui.components.MinGridCellWidth
 import dev.ronellsalunke.modellm.ui.components.navigationAreaBottomPadding
 import dev.ronellsalunke.modellm.ui.components.HomeTopAppBar
 import dev.ronellsalunke.modellm.ui.components.LabLogo
-import dev.ronellsalunke.modellm.ui.components.rememberDetailScrollBehavior
 import dev.ronellsalunke.modellm.ui.components.SearchField
 import dev.ronellsalunke.modellm.ui.components.SectionHeader
 import dev.ronellsalunke.modellm.ui.components.ShareIconButton
@@ -189,7 +188,6 @@ fun LabDetailScreen(labId: String, onBack: () -> Unit, onModelClick: (String) ->
         koinViewModel<LabDetailViewModel>(key = labId, parameters = { parametersOf(labId) })
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val lab = state.lab
-    val scrollBehavior = rememberDetailScrollBehavior()
     val listPadding = PaddingValues(
         bottom = Dimens.xl + safeDrawingBottomPadding() + navigationAreaBottomPadding(),
     )
@@ -197,12 +195,10 @@ fun LabDetailScreen(labId: String, onBack: () -> Unit, onModelClick: (String) ->
         Modifier.fillMaxSize()
             .background(LocalAppPalette.current.background)
             .safeDrawingHorizontalPadding()
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
     ) {
         DetailTopAppBar(
             title = lab?.name ?: labId,
             onBack = onBack,
-            scrollBehavior = scrollBehavior,
             actions = { ShareIconButton(ModelsDevLinks.lab(labId)) },
         )
         CatalogDivider()

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
@@ -52,6 +53,8 @@ import dev.ronellsalunke.modellm.data.model.Provider
 import dev.ronellsalunke.modellm.ui.components.CatalogDivider
 import dev.ronellsalunke.modellm.ui.components.LabLogo
 import dev.ronellsalunke.modellm.ui.components.LocalCatalogShortcuts
+import dev.ronellsalunke.modellm.ui.components.LocalWideLayout
+import dev.ronellsalunke.modellm.ui.components.ModalSideSheet
 import dev.ronellsalunke.modellm.ui.components.ProviderLogo
 import dev.ronellsalunke.modellm.ui.components.SearchField
 import dev.ronellsalunke.modellm.ui.components.SectionHeader
@@ -71,7 +74,10 @@ private val CutoffYears = listOf("2024", "2025", "2026")
 
 private fun <T> Set<T>.toggle(value: T): Set<T> = if (value in this) this - value else this + value
 
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * Filter sheet. Bottom sheet on compact windows; side sheet on medium and larger windows, where
+ * a bottom sheet would leave the catalog hidden behind a stretched surface.
+ */
 @Composable
 fun ModelFiltersSheet(
     filters: ModelFilters,
@@ -79,6 +85,66 @@ fun ModelFiltersSheet(
     labs: List<Lab>,
     onDismiss: () -> Unit,
     onUpdateFilters: ((ModelFilters) -> ModelFilters) -> Unit,
+) {
+    var providerQuery by rememberSaveable { mutableStateOf("") }
+    var labQuery by rememberSaveable { mutableStateOf("") }
+    var showLabs by rememberSaveable { mutableStateOf(true) }
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    DisposableEffect(focusManager, keyboardController) {
+        onDispose {
+            focusManager.clearFocus()
+            keyboardController?.hide()
+        }
+    }
+    // Shortcuts must not act on the catalog behind the sheet.
+    CompositionLocalProvider(LocalCatalogShortcuts provides null) {
+        if (LocalWideLayout.current) {
+            ModalSideSheet(onDismiss = onDismiss) {
+                FilterSheetContent(
+                    filters = filters,
+                    providers = providers,
+                    labs = labs,
+                    onHide = onDismiss,
+                    onUpdateFilters = onUpdateFilters,
+                    providerQuery = providerQuery,
+                    onProviderQueryChange = { providerQuery = it },
+                    labQuery = labQuery,
+                    onLabQueryChange = { labQuery = it },
+                    showLabs = showLabs,
+                    onShowLabsChange = { showLabs = it },
+                    modifier = Modifier.fillMaxSize().imePadding(),
+                )
+            }
+        } else {
+            FilterBottomSheet(onDismiss = onDismiss) { onHide ->
+                FilterSheetContent(
+                    filters = filters,
+                    providers = providers,
+                    labs = labs,
+                    onHide = onHide,
+                    onUpdateFilters = onUpdateFilters,
+                    providerQuery = providerQuery,
+                    onProviderQueryChange = { providerQuery = it },
+                    labQuery = labQuery,
+                    onLabQueryChange = { labQuery = it },
+                    showLabs = showLabs,
+                    onShowLabsChange = { showLabs = it },
+                    modifier =
+                        Modifier.fillMaxWidth()
+                            .fillMaxHeight(SheetMaxHeightFraction)
+                            .imePadding(),
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FilterBottomSheet(
+    onDismiss: () -> Unit,
+    content: @Composable (onHide: () -> Unit) -> Unit,
 ) {
     val sheetState = rememberBottomSheetState(
         initialValue = SheetValue.Hidden,
@@ -96,24 +162,7 @@ fun ModelFiltersSheet(
         containerColor = LocalAppPalette.current.background,
         shape = RoundedCornerShape(topStart = SheetCornerRadius, topEnd = SheetCornerRadius),
     ) {
-        val focusManager = LocalFocusManager.current
-        val keyboardController = LocalSoftwareKeyboardController.current
-        DisposableEffect(focusManager, keyboardController) {
-            onDispose {
-                focusManager.clearFocus()
-                keyboardController?.hide()
-            }
-        }
-        // Shortcuts must not act on the catalog behind the sheet.
-        CompositionLocalProvider(LocalCatalogShortcuts provides null) {
-            FilterSheetContent(
-                filters = filters,
-                providers = providers,
-                labs = labs,
-                onHide = hideSheet,
-                onUpdateFilters = onUpdateFilters,
-            )
-        }
+        content(hideSheet)
     }
 }
 
@@ -124,10 +173,14 @@ private fun FilterSheetContent(
     labs: List<Lab>,
     onHide: () -> Unit,
     onUpdateFilters: ((ModelFilters) -> ModelFilters) -> Unit,
+    providerQuery: String,
+    onProviderQueryChange: (String) -> Unit,
+    labQuery: String,
+    onLabQueryChange: (String) -> Unit,
+    showLabs: Boolean,
+    onShowLabsChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    var providerQuery by rememberSaveable { mutableStateOf("") }
-    var labQuery by rememberSaveable { mutableStateOf("") }
-    var showLabs by rememberSaveable { mutableStateOf(true) }
     val visibleLabs = remember(labs, labQuery) {
         labs.filter { it.name.contains(labQuery, true) || it.id.contains(labQuery, true) }
     }
@@ -136,7 +189,7 @@ private fun FilterSheetContent(
             it.name.contains(providerQuery, true) || it.id.contains(providerQuery, true)
         }
     }
-    Column(Modifier.fillMaxWidth().fillMaxHeight(SheetMaxHeightFraction).imePadding()) {
+    Column(modifier) {
         Text(
             "Filters",
             style = MaterialTheme.typography.titleMedium,
@@ -155,8 +208,8 @@ private fun FilterSheetContent(
                     labsCount = labs.size,
                     providersCount = providers.size,
                     query = if (showLabs) labQuery else providerQuery,
-                    onToggleLabs = { showLabs = it },
-                    onQueryChange = { if (showLabs) labQuery = it else providerQuery = it },
+                    onToggleLabs = onShowLabsChange,
+                    onQueryChange = if (showLabs) onLabQueryChange else onProviderQueryChange,
                 )
             }
             filterEntityItems(showLabs, visibleLabs, visibleProviders, filters, onUpdateFilters)
@@ -165,8 +218,8 @@ private fun FilterSheetContent(
         FilterActionButtons(
             onReset = {
                 onUpdateFilters { ModelFilters() }
-                providerQuery = ""
-                labQuery = ""
+                onProviderQueryChange("")
+                onLabQueryChange("")
             },
             onDone = onHide,
         )
