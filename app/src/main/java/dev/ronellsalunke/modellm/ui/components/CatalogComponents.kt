@@ -54,6 +54,9 @@ private val SearchFieldHeight = 56.dp
 fun CatalogDivider() =
     HorizontalDivider(thickness = Dimens.hairline, color = LocalAppPalette.current.border)
 
+/** Minimum height shared by the catalog list rows so every tab's rows line up. */
+val CatalogRowMinHeight = 64.dp
+
 @Composable
 fun SectionHeader(title: String) {
     Text(

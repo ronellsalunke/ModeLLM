@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -25,12 +26,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.ronellsalunke.modellm.data.model.Lab
 import dev.ronellsalunke.modellm.data.repository.SyncState
 import dev.ronellsalunke.modellm.ui.components.AppPullToRefreshBox
 import dev.ronellsalunke.modellm.ui.components.CanonicalModelRow
 import dev.ronellsalunke.modellm.ui.components.CatalogDivider
+import dev.ronellsalunke.modellm.ui.components.CatalogRowMinHeight
 import dev.ronellsalunke.modellm.ui.components.DetailTopAppBar
 import dev.ronellsalunke.modellm.ui.components.EmptyState
 import dev.ronellsalunke.modellm.ui.components.ErrorState
@@ -153,8 +156,11 @@ private fun LabRow(lab: Lab, onLabClick: (String) -> Unit) {
     val updatedText = lab.lastUpdated ?: "–"
     Column(Modifier.fillMaxWidth()) {
         Column(
-            Modifier.fillMaxWidth().clickable { onLabClick(lab.id) }.padding(Dimens.lg),
-            verticalArrangement = Arrangement.spacedBy(Dimens.xs),
+            Modifier.fillMaxWidth()
+                .heightIn(min = CatalogRowMinHeight)
+                .clickable { onLabClick(lab.id) }
+                .padding(horizontal = Dimens.lg, vertical = Dimens.sm),
+            verticalArrangement = Arrangement.spacedBy(3.dp, Alignment.CenterVertically),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,

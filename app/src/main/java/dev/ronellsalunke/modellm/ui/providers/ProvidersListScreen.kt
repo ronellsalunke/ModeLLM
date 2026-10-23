@@ -32,6 +32,7 @@ import dev.ronellsalunke.modellm.data.model.Provider
 import dev.ronellsalunke.modellm.data.repository.SyncState
 import dev.ronellsalunke.modellm.ui.components.AppPullToRefreshBox
 import dev.ronellsalunke.modellm.ui.components.CatalogDivider
+import dev.ronellsalunke.modellm.ui.components.CatalogRowMinHeight
 import dev.ronellsalunke.modellm.ui.components.EmptyState
 import dev.ronellsalunke.modellm.ui.components.ErrorState
 import dev.ronellsalunke.modellm.ui.components.MinGridCellWidth
@@ -142,7 +143,7 @@ private fun ProviderRow(provider: Provider, onProviderClick: (String) -> Unit) {
     Column(Modifier.fillMaxWidth()) {
         Row(
             Modifier.fillMaxWidth()
-                .heightIn(min = 48.dp)
+                .heightIn(min = CatalogRowMinHeight)
                 .clickable { onProviderClick(provider.id) }
                 .padding(Dimens.lg),
             verticalAlignment = Alignment.CenterVertically,

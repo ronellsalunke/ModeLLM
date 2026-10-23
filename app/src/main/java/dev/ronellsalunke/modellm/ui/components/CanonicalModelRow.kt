@@ -99,7 +99,7 @@ fun CanonicalModelRow(model: CanonicalModel, onClick: () -> Unit) {
     Column(Modifier.fillMaxWidth()) {
         Column(
             Modifier.fillMaxWidth()
-                .heightIn(min = 64.dp)
+                .heightIn(min = CatalogRowMinHeight)
                 .clickable(onClick = onClick)
                 .padding(horizontal = Dimens.lg, vertical = Dimens.sm),
             verticalArrangement = Arrangement.spacedBy(3.dp, Alignment.CenterVertically),
