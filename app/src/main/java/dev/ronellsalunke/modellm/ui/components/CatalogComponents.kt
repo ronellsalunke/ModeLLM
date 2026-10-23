@@ -28,11 +28,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -42,6 +46,9 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import dev.ronellsalunke.modellm.ui.theme.Dimens
 import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
+
+/** Material text-field height, which leaves room around the trailing icon's state layer. */
+private val SearchFieldHeight = 56.dp
 
 @Composable
 fun CatalogDivider() =
@@ -63,15 +70,16 @@ fun SearchField(
     onQueryChange: (String) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
+    focusRequester: FocusRequester = remember { FocusRequester() },
 ) {
     val palette = LocalAppPalette.current
-    val focusManager = LocalFocusManager.current
+    val dismissFocus = dismissCatalogFocus()
     Row(
         modifier
-            .heightIn(min = 48.dp)
+            .heightIn(min = SearchFieldHeight)
             .border(1.dp, palette.border, MaterialTheme.shapes.small)
             .background(palette.surface, MaterialTheme.shapes.small)
-            .padding(start = Dimens.md),
+            .padding(start = Dimens.md, end = Dimens.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
@@ -90,10 +98,12 @@ fun SearchField(
                 ),
             cursorBrush = SolidColor(palette.brand),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
+            keyboardActions = KeyboardActions(onSearch = { dismissFocus() }),
             modifier =
                 Modifier.weight(1f)
-                    .heightIn(min = 48.dp)
+                    .focusRequester(focusRequester)
+                    .dismissSearchOnEscape(dismissFocus)
+                    .heightIn(min = SearchFieldHeight)
                     .padding(horizontal = Dimens.sm)
                     .semantics { contentDescription = label },
             decorationBox = { field ->
@@ -113,7 +123,7 @@ fun SearchField(
             SearchClearButton(
                 onClick = {
                     onQueryChange("")
-                    focusManager.clearFocus()
+                    dismissFocus()
                 }
             )
         }
@@ -124,7 +134,7 @@ fun SearchField(
 private fun SearchClearButton(onClick: () -> Unit) {
     IconButton(
         onClick = onClick,
-        modifier = Modifier.size(48.dp),
+        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand),
     ) {
         Icon(
             Icons.Default.Close,
@@ -152,7 +162,7 @@ fun ExternalLink(label: String, url: String, modifier: Modifier = Modifier) {
                 Toast.makeText(context, "No app can open this link", Toast.LENGTH_SHORT).show()
             }
         },
-        modifier = modifier.heightIn(min = 48.dp),
+        modifier = modifier.heightIn(min = 48.dp).pointerHoverIcon(PointerIcon.Hand),
         shape = MaterialTheme.shapes.small,
         colors = ButtonDefaults.textButtonColors(contentColor = LocalAppPalette.current.brandText),
         contentPadding = PaddingValues(horizontal = 4.dp),

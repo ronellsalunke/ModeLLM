@@ -10,7 +10,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -23,11 +26,12 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,8 +41,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -52,10 +56,14 @@ import dev.ronellsalunke.modellm.ui.components.CanonicalModelRow
 import dev.ronellsalunke.modellm.ui.components.CatalogDivider
 import dev.ronellsalunke.modellm.ui.components.EmptyState
 import dev.ronellsalunke.modellm.ui.components.ErrorState
-import dev.ronellsalunke.modellm.ui.components.FloatingTabBarClearance
+import dev.ronellsalunke.modellm.ui.components.MinGridCellWidth
+import dev.ronellsalunke.modellm.ui.components.navigationAreaBottomPadding
 import dev.ronellsalunke.modellm.ui.components.HomeTopAppBar
 import dev.ronellsalunke.modellm.ui.components.SearchField
 import dev.ronellsalunke.modellm.ui.components.SyncBanner
+import dev.ronellsalunke.modellm.ui.components.TooltipIconButton
+import dev.ronellsalunke.modellm.ui.components.catalogShortcuts
+import dev.ronellsalunke.modellm.ui.components.dismissCatalogFocus
 import dev.ronellsalunke.modellm.ui.components.navigationBarBottomPadding
 import dev.ronellsalunke.modellm.ui.components.tabScreenPadding
 import dev.ronellsalunke.modellm.ui.theme.Dimens
@@ -81,20 +89,21 @@ fun ModelsListScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var query by rememberSaveable { mutableStateOf("") }
     LaunchedEffect(Unit) { viewModel.setQuery(query) }
-    var filterSheet by remember { mutableStateOf(false) }
-    val focusManager = LocalFocusManager.current
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val dismissKeyboard: () -> Unit = {
-        focusManager.clearFocus()
-        keyboardController?.hide()
-    }
+    var filterSheet by rememberSaveable { mutableStateOf(false) }
+    val dismissKeyboard = dismissCatalogFocus()
     val activeFilters = remember(state.filters, state.providers, state.labs) {
         state.filters.activeFilters(state.providers, state.labs)
     }
-    val background = LocalAppPalette.current.background
-    Column(Modifier.tabScreenPadding().background(background)) {
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val searchFocusRequester = remember { FocusRequester() }
+    Column(
+        Modifier.tabScreenPadding().background(LocalAppPalette.current.background)
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .catalogShortcuts(searchFocusRequester, viewModel::refresh),
+    ) {
         ModelsTopBar(
             sort = state.sort,
+            scrollBehavior = scrollBehavior,
             activeFiltersCount = activeFilters.size,
             onSortSelected = viewModel::setSort,
             onOpenFilters = { filterSheet = true },
@@ -103,6 +112,7 @@ fun ModelsListScreen(
         )
         CatalogDivider()
         ModelsSearchField(
+            focusRequester = searchFocusRequester,
             query = query,
             onQueryChange = {
                 query = it
@@ -138,11 +148,13 @@ fun ModelsListScreen(
 
 @Composable
 private fun ModelsSearchField(
+    focusRequester: FocusRequester,
     query: String,
     onQueryChange: (String) -> Unit,
     filtersVisible: Boolean,
 ) {
     SearchField(
+        focusRequester = focusRequester,
         query = query,
         onQueryChange = onQueryChange,
         label = "Search models, labs, providers",
@@ -161,6 +173,7 @@ private fun ModelsSearchField(
 @Composable
 private fun ModelsTopBar(
     sort: ModelSort,
+    scrollBehavior: TopAppBarScrollBehavior,
     activeFiltersCount: Int,
     onSortSelected: (ModelSort) -> Unit,
     onOpenFilters: () -> Unit,
@@ -169,6 +182,7 @@ private fun ModelsTopBar(
 ) {
     HomeTopAppBar(
         title = "ModeLLM",
+        scrollBehavior = scrollBehavior,
         leading = {
             Box(Modifier.width(Dimens.xxl + Dimens.sm), contentAlignment = Alignment.Center) {
                 Icon(
@@ -185,7 +199,7 @@ private fun ModelsTopBar(
                 onDismissKeyboard()
                 onOpenFilters()
             }
-            FilledTonalIconButton(onClick = onSettings) {
+            TooltipIconButton(text = "Settings", onClick = onSettings) {
                 Icon(Icons.Default.Settings, "Settings")
             }
         },
@@ -200,7 +214,8 @@ private fun SortDropdownAction(
 ) {
     var sortMenu by remember { mutableStateOf(false) }
     Box {
-        FilledTonalIconButton(
+        TooltipIconButton(
+            text = "Sort by ${currentSort.label()}",
             onClick = {
                 onBeforeOpen()
                 sortMenu = true
@@ -239,7 +254,10 @@ private fun FilterBadgeAction(
     activeFilterCount: Int,
     onClick: () -> Unit,
 ) {
-    FilledTonalIconButton(onClick = onClick) {
+    TooltipIconButton(
+        text = if (activeFilterCount == 0) "Filters" else "Filters, $activeFilterCount active",
+        onClick = onClick,
+    ) {
         BadgedBox(
             badge = {
                 if (activeFilterCount > 0) {
@@ -299,13 +317,16 @@ private fun ModelsListContent(
         onRefresh = onRefresh,
         modifier = modifier,
     ) {
-        LazyColumn(
-            Modifier.fillMaxSize(),
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(MinGridCellWidth),
+            modifier = Modifier.fillMaxSize(),
             contentPadding =
-                PaddingValues(bottom = FloatingTabBarClearance + navigationBarBottomPadding()),
+                PaddingValues(
+                    bottom = navigationAreaBottomPadding() + navigationBarBottomPadding(),
+                ),
         ) {
             if (state.models.isNullOrEmpty()) {
-                item {
+                item(span = { GridItemSpan(maxLineSpan) }) {
                     ModelsListEmptyState(
                         state = state,
                         hasSearchOrFilters = hasSearchOrFilters,

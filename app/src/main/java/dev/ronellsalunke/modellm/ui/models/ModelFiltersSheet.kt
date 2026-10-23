@@ -28,11 +28,13 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +51,7 @@ import dev.ronellsalunke.modellm.data.model.ModelFilters
 import dev.ronellsalunke.modellm.data.model.Provider
 import dev.ronellsalunke.modellm.ui.components.CatalogDivider
 import dev.ronellsalunke.modellm.ui.components.LabLogo
+import dev.ronellsalunke.modellm.ui.components.LocalCatalogShortcuts
 import dev.ronellsalunke.modellm.ui.components.ProviderLogo
 import dev.ronellsalunke.modellm.ui.components.SearchField
 import dev.ronellsalunke.modellm.ui.components.SectionHeader
@@ -101,13 +104,16 @@ fun ModelFiltersSheet(
                 keyboardController?.hide()
             }
         }
-        FilterSheetContent(
-            filters = filters,
-            providers = providers,
-            labs = labs,
-            onHide = hideSheet,
-            onUpdateFilters = onUpdateFilters,
-        )
+        // Shortcuts must not act on the catalog behind the sheet.
+        CompositionLocalProvider(LocalCatalogShortcuts provides null) {
+            FilterSheetContent(
+                filters = filters,
+                providers = providers,
+                labs = labs,
+                onHide = hideSheet,
+                onUpdateFilters = onUpdateFilters,
+            )
+        }
     }
 }
 
@@ -119,9 +125,9 @@ private fun FilterSheetContent(
     onHide: () -> Unit,
     onUpdateFilters: ((ModelFilters) -> ModelFilters) -> Unit,
 ) {
-    var providerQuery by remember { mutableStateOf("") }
-    var labQuery by remember { mutableStateOf("") }
-    var showLabs by remember { mutableStateOf(true) }
+    var providerQuery by rememberSaveable { mutableStateOf("") }
+    var labQuery by rememberSaveable { mutableStateOf("") }
+    var showLabs by rememberSaveable { mutableStateOf(true) }
     val visibleLabs = remember(labs, labQuery) {
         labs.filter { it.name.contains(labQuery, true) || it.id.contains(labQuery, true) }
     }

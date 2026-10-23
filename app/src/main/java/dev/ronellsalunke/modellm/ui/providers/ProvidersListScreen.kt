@@ -10,10 +10,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,6 +25,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -31,11 +36,13 @@ import dev.ronellsalunke.modellm.ui.components.AppPullToRefreshBox
 import dev.ronellsalunke.modellm.ui.components.CatalogDivider
 import dev.ronellsalunke.modellm.ui.components.EmptyState
 import dev.ronellsalunke.modellm.ui.components.ErrorState
-import dev.ronellsalunke.modellm.ui.components.FloatingTabBarClearance
+import dev.ronellsalunke.modellm.ui.components.MinGridCellWidth
+import dev.ronellsalunke.modellm.ui.components.navigationAreaBottomPadding
 import dev.ronellsalunke.modellm.ui.components.HomeTopAppBar
 import dev.ronellsalunke.modellm.ui.components.ProviderLogo
 import dev.ronellsalunke.modellm.ui.components.SearchField
 import dev.ronellsalunke.modellm.ui.components.SyncBanner
+import dev.ronellsalunke.modellm.ui.components.catalogShortcuts
 import dev.ronellsalunke.modellm.ui.components.navigationBarBottomPadding
 import dev.ronellsalunke.modellm.ui.components.tabScreenPadding
 import dev.ronellsalunke.modellm.ui.theme.Dimens
@@ -55,14 +62,21 @@ fun ProvidersListScreen(
         remember(state.providers, query) {
             state.providers.filter { it.name.contains(query, true) || it.id.contains(query, true) }
         }
-    Column(Modifier.tabScreenPadding().background(LocalAppPalette.current.background)) {
-        HomeTopAppBar(title = "Providers")
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val searchFocusRequester = remember { FocusRequester() }
+    Column(
+        Modifier.tabScreenPadding().background(LocalAppPalette.current.background)
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .catalogShortcuts(searchFocusRequester, viewModel::refresh),
+    ) {
+        HomeTopAppBar(title = "Providers", scrollBehavior = scrollBehavior)
         CatalogDivider()
         SearchField(
             query,
             { query = it },
             "Search providers",
             Modifier.fillMaxWidth().padding(Dimens.sm),
+            focusRequester = searchFocusRequester,
         )
         SyncBanner(state.lastSyncedAt, state.syncState, viewModel::refresh)
         AppPullToRefreshBox(
@@ -70,13 +84,16 @@ fun ProvidersListScreen(
             onRefresh = viewModel::refresh,
             modifier = Modifier.weight(1f),
         ) {
-            LazyColumn(
-                Modifier.fillMaxSize(),
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(MinGridCellWidth),
+                modifier = Modifier.fillMaxSize(),
                 contentPadding =
-                    PaddingValues(bottom = FloatingTabBarClearance + navigationBarBottomPadding()),
+                    PaddingValues(
+                        bottom = navigationAreaBottomPadding() + navigationBarBottomPadding(),
+                    ),
             ) {
                 if (providers.isEmpty()) {
-                    item {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
                         ProvidersEmptyState(
                             query = query,
                             syncState = state.syncState,
@@ -126,28 +143,35 @@ private fun ProvidersEmptyState(
 
 @Composable
 private fun ProviderRow(provider: Provider, onProviderClick: (String) -> Unit) {
-    Row(
-        Modifier.fillMaxWidth()
-            .heightIn(min = 48.dp)
-            .clickable { onProviderClick(provider.id) }
-            .padding(Dimens.lg),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Dimens.md),
-    ) {
-        ProviderLogo(provider.id, provider.name)
-        Column(Modifier.weight(1f)) {
-            Text(provider.name, style = MaterialTheme.typography.titleSmall)
-            provider.npm?.let {
+    Column(Modifier.fillMaxWidth()) {
+        Row(
+            Modifier.fillMaxWidth()
+                .heightIn(min = 48.dp)
+                .clickable { onProviderClick(provider.id) }
+                .padding(Dimens.lg),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Dimens.md),
+        ) {
+            ProviderLogo(provider.id, provider.name)
+            Column(Modifier.weight(1f)) {
                 Text(
-                    it,
-                    style = MonoStyle,
-                    color = LocalAppPalette.current.textTertiary,
+                    provider.name,
+                    style = MaterialTheme.typography.titleSmall,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
+                provider.npm?.let {
+                    Text(
+                        it,
+                        style = MonoStyle,
+                        color = LocalAppPalette.current.textTertiary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
+            Text(groupedNumber(provider.modelCount), style = MonoStyle)
         }
-        Text(groupedNumber(provider.modelCount), style = MonoStyle)
+        CatalogDivider()
     }
-    CatalogDivider()
 }

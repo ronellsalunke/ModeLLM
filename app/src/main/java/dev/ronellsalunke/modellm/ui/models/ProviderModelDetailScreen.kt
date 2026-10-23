@@ -40,6 +40,7 @@ import dev.ronellsalunke.modellm.ui.components.StatusChip
 import dev.ronellsalunke.modellm.ui.components.capabilities
 import dev.ronellsalunke.modellm.ui.components.rememberDetailScrollBehavior
 import dev.ronellsalunke.modellm.ui.components.safeDrawingBottomPadding
+import dev.ronellsalunke.modellm.ui.components.navigationAreaBottomPadding
 import dev.ronellsalunke.modellm.ui.components.safeDrawingHorizontalPadding
 import dev.ronellsalunke.modellm.ui.theme.Dimens
 import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
@@ -117,7 +118,9 @@ private fun ProviderModelDetailContent(
     val capabilities = remember(model) { model.capabilities() }
     LazyColumn(
         modifier,
-        contentPadding = PaddingValues(bottom = Dimens.xl + safeDrawingBottomPadding()),
+        contentPadding = PaddingValues(
+            bottom = Dimens.xl + safeDrawingBottomPadding() + navigationAreaBottomPadding(),
+        ),
     ) {
         item {
             ProviderModelHeader(model)

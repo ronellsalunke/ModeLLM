@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MediumFlexibleTopAppBar
 import androidx.compose.material3.Text
@@ -25,12 +24,14 @@ import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
 fun HomeTopAppBar(
     title: String,
     leading: (@Composable () -> Unit)? = null,
+    scrollBehavior: TopAppBarScrollBehavior? = null,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     TopAppBar(
         title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         navigationIcon = { leading?.invoke() },
         actions = actions,
+        scrollBehavior = scrollBehavior,
         modifier = Modifier.background(LocalAppPalette.current.background),
         colors = appTopBarColors(),
     )
@@ -45,7 +46,7 @@ fun DetailTopAppBar(
 ) {
     MediumFlexibleTopAppBar(
         title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-        navigationIcon = { BackIconButton(onBack) },
+        navigationIcon = { if (LocalDetailShowsBackButton.current) BackIconButton(onBack) },
         actions = actions,
         scrollBehavior = scrollBehavior,
         modifier = Modifier.background(LocalAppPalette.current.background),
@@ -65,7 +66,7 @@ fun SmallBackTopAppBar(title: String, onBack: () -> Unit) {
 
 @Composable
 fun BackIconButton(onBack: () -> Unit) {
-    FilledTonalIconButton(onClick = onBack) {
+    TooltipIconButton(text = "Back", onClick = onBack) {
         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
     }
 }
@@ -73,7 +74,8 @@ fun BackIconButton(onBack: () -> Unit) {
 @Composable
 fun ShareIconButton(url: String) {
     val context = LocalContext.current
-    FilledTonalIconButton(
+    TooltipIconButton(
+        text = "Share",
         onClick = {
             val send =
                 Intent(Intent.ACTION_SEND).apply {

@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -20,6 +22,8 @@ import dev.ronellsalunke.modellm.ui.components.DetailTopAppBar
 import dev.ronellsalunke.modellm.ui.components.EmptyState
 import dev.ronellsalunke.modellm.ui.components.ErrorState
 import dev.ronellsalunke.modellm.ui.components.ModelRow
+import dev.ronellsalunke.modellm.ui.components.MinGridCellWidth
+import dev.ronellsalunke.modellm.ui.components.navigationAreaBottomPadding
 import dev.ronellsalunke.modellm.ui.components.ProviderFacts
 import dev.ronellsalunke.modellm.ui.components.SectionHeader
 import dev.ronellsalunke.modellm.ui.components.ShareIconButton
@@ -64,16 +68,21 @@ fun ProviderDetailScreen(providerId: String, onBack: () -> Unit, onModelClick: (
                     EmptyState("Provider not found", "This provider is not in the saved catalog.")
             }
         } else
-            LazyColumn(
-                Modifier.weight(1f),
-                contentPadding = PaddingValues(bottom = Dimens.xl + safeDrawingBottomPadding()),
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(MinGridCellWidth),
+                modifier = Modifier.weight(1f),
+                contentPadding = PaddingValues(
+                    bottom = Dimens.xl + safeDrawingBottomPadding() + navigationAreaBottomPadding(),
+                ),
             ) {
-                item {
-                    Spacer(Modifier.height(Dimens.lg))
-                    ProviderFacts(provider, showIdentity = false)
-                    CatalogDivider()
-                    SectionHeader("Models (${provider.modelCount})")
-                    if (state.models.isEmpty()) EmptyState("No models listed")
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Column {
+                        Spacer(Modifier.height(Dimens.lg))
+                        ProviderFacts(provider, showIdentity = false)
+                        CatalogDivider()
+                        SectionHeader("Models (${provider.modelCount})")
+                        if (state.models.isEmpty()) EmptyState("No models listed")
+                    }
                 }
                 items(
                     state.models,

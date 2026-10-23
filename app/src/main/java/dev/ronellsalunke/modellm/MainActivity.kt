@@ -1,6 +1,10 @@
 package dev.ronellsalunke.modellm
 
 import android.os.Bundle
+import android.view.KeyEvent
+import android.view.KeyboardShortcutGroup
+import android.view.KeyboardShortcutInfo
+import android.view.Menu
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -56,6 +60,21 @@ class MainActivity : ComponentActivity() {
                 ModeLLMApp()
             }
         }
+    }
+
+    override fun onProvideKeyboardShortcuts(
+        data: MutableList<KeyboardShortcutGroup>,
+        menu: Menu?,
+        deviceId: Int,
+    ) {
+        super.onProvideKeyboardShortcuts(data, menu, deviceId)
+        data.add(KeyboardShortcutGroup("Navigation", listOf(
+            KeyboardShortcutInfo("Models", KeyEvent.KEYCODE_1, KeyEvent.META_CTRL_ON),
+            KeyboardShortcutInfo("Providers", KeyEvent.KEYCODE_2, KeyEvent.META_CTRL_ON),
+            KeyboardShortcutInfo("Labs", KeyEvent.KEYCODE_3, KeyEvent.META_CTRL_ON),
+            KeyboardShortcutInfo("Find", KeyEvent.KEYCODE_F, KeyEvent.META_CTRL_ON),
+            KeyboardShortcutInfo("Refresh", KeyEvent.KEYCODE_R, KeyEvent.META_CTRL_ON),
+        )))
     }
 
     private companion object {

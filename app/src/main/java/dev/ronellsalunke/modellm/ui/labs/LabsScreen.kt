@@ -9,10 +9,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,6 +25,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.ronellsalunke.modellm.data.model.Lab
 import dev.ronellsalunke.modellm.data.repository.SyncState
@@ -33,7 +38,8 @@ import dev.ronellsalunke.modellm.ui.components.EmptyState
 import dev.ronellsalunke.modellm.ui.components.ErrorState
 import dev.ronellsalunke.modellm.ui.components.Fact
 import dev.ronellsalunke.modellm.ui.components.FactGrid
-import dev.ronellsalunke.modellm.ui.components.FloatingTabBarClearance
+import dev.ronellsalunke.modellm.ui.components.MinGridCellWidth
+import dev.ronellsalunke.modellm.ui.components.navigationAreaBottomPadding
 import dev.ronellsalunke.modellm.ui.components.HomeTopAppBar
 import dev.ronellsalunke.modellm.ui.components.LabLogo
 import dev.ronellsalunke.modellm.ui.components.rememberDetailScrollBehavior
@@ -41,6 +47,7 @@ import dev.ronellsalunke.modellm.ui.components.SearchField
 import dev.ronellsalunke.modellm.ui.components.SectionHeader
 import dev.ronellsalunke.modellm.ui.components.ShareIconButton
 import dev.ronellsalunke.modellm.ui.components.SyncBanner
+import dev.ronellsalunke.modellm.ui.components.catalogShortcuts
 import dev.ronellsalunke.modellm.ui.components.navigationBarBottomPadding
 import dev.ronellsalunke.modellm.ui.components.safeDrawingBottomPadding
 import dev.ronellsalunke.modellm.ui.components.safeDrawingHorizontalPadding
@@ -64,16 +71,21 @@ fun LabsScreen(onLabClick: (String) -> Unit, viewModel: LabsViewModel = koinView
                 query.isBlank() || it.name.contains(query, true) || it.id.contains(query, true)
             }
         }
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val searchFocusRequester = remember { FocusRequester() }
     Column(
         Modifier.tabScreenPadding().background(LocalAppPalette.current.background)
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .catalogShortcuts(searchFocusRequester, viewModel::refresh)
     ) {
-        HomeTopAppBar(title = "Labs")
+        HomeTopAppBar(title = "Labs", scrollBehavior = scrollBehavior)
         CatalogDivider()
         SearchField(
             query,
             { query = it },
             "Search labs",
             Modifier.fillMaxWidth().padding(Dimens.sm),
+            focusRequester = searchFocusRequester,
         )
         SyncBanner(state.lastSyncedAt, state.syncState, viewModel::refresh)
         AppPullToRefreshBox(
@@ -81,13 +93,16 @@ fun LabsScreen(onLabClick: (String) -> Unit, viewModel: LabsViewModel = koinView
             viewModel::refresh,
             Modifier.weight(1f),
         ) {
-            LazyColumn(
-                Modifier.fillMaxSize(),
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(MinGridCellWidth),
+                modifier = Modifier.fillMaxSize(),
                 contentPadding =
-                PaddingValues(bottom = FloatingTabBarClearance + navigationBarBottomPadding()),
+                    PaddingValues(
+                        bottom = navigationAreaBottomPadding() + navigationBarBottomPadding(),
+                    ),
             ) {
                 if (filteredLabs.isEmpty()) {
-                    item {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
                         LabsEmptyState(
                             syncState = state.syncState,
                             labs = state.labs,
@@ -141,24 +156,31 @@ private fun LabRow(lab: Lab, onLabClick: (String) -> Unit) {
     val modelCountText = pluralized(lab.modelCount, "model")
     val providerCountText = pluralized(lab.providerCount, "provider")
     val updatedText = lab.lastUpdated ?: "–"
-    Column(
-        Modifier.fillMaxWidth().clickable { onLabClick(lab.id) }.padding(Dimens.lg),
-        verticalArrangement = Arrangement.spacedBy(Dimens.xs),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
+    Column(Modifier.fillMaxWidth()) {
+        Column(
+            Modifier.fillMaxWidth().clickable { onLabClick(lab.id) }.padding(Dimens.lg),
+            verticalArrangement = Arrangement.spacedBy(Dimens.xs),
         ) {
-            LabLogo(lab.id, lab.name)
-            Text(lab.name, style = MaterialTheme.typography.titleSmall)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
+            ) {
+                LabLogo(lab.id, lab.name)
+                Text(
+                    lab.name,
+                    style = MaterialTheme.typography.titleSmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Text(
+                "$modelCountText · $providerCountText · $updatedText",
+                style = MonoLabelStyle,
+                color = LocalAppPalette.current.textTertiary,
+            )
         }
-        Text(
-            "$modelCountText · $providerCountText · $updatedText",
-            style = MonoLabelStyle,
-            color = LocalAppPalette.current.textTertiary,
-        )
+        CatalogDivider()
     }
-    CatalogDivider()
 }
 
 @Composable
@@ -168,7 +190,9 @@ fun LabDetailScreen(labId: String, onBack: () -> Unit, onModelClick: (String) ->
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val lab = state.lab
     val scrollBehavior = rememberDetailScrollBehavior()
-    val listPadding = PaddingValues(bottom = Dimens.xl + safeDrawingBottomPadding())
+    val listPadding = PaddingValues(
+        bottom = Dimens.xl + safeDrawingBottomPadding() + navigationAreaBottomPadding(),
+    )
     Column(
         Modifier.fillMaxSize()
             .background(LocalAppPalette.current.background)
@@ -190,30 +214,17 @@ fun LabDetailScreen(labId: String, onBack: () -> Unit, onModelClick: (String) ->
                 else -> EmptyState("Lab not found")
             }
         } else {
-            LazyColumn(Modifier.weight(1f), contentPadding = listPadding) {
-                item {
-                    Column(
-                        Modifier.padding(Dimens.lg),
-                        verticalArrangement = Arrangement.spacedBy(Dimens.sm),
-                    ) {
-                        Text(
-                            lab.id,
-                            style = MonoStyle,
-                            color = LocalAppPalette.current.textTertiary,
-                        )
-                        lab.description
-                            ?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(MinGridCellWidth),
+                modifier = Modifier.weight(1f),
+                contentPadding = listPadding,
+            ) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Column {
+                        LabDetailHeader(lab)
+                        SectionHeader("Models (${lab.modelCount})")
+                        if (state.models.isEmpty()) EmptyState("No models listed")
                     }
-                    FactGrid(
-                        listOf(
-                            Fact("Models", lab.modelCount.toString(), true),
-                            Fact("Providers", lab.providerCount.toString(), true),
-                            Fact("Updated", lab.lastUpdated),
-                        ),
-                        compactColumns = 2,
-                    )
-                    SectionHeader("Models (${lab.modelCount})")
-                    if (state.models.isEmpty()) EmptyState("No models listed")
                 }
                 items(state.models, key = { it.id }) { model ->
                     CanonicalModelRow(model) { onModelClick(model.id) }
@@ -221,4 +232,23 @@ fun LabDetailScreen(labId: String, onBack: () -> Unit, onModelClick: (String) ->
             }
         }
     }
+}
+
+@Composable
+private fun LabDetailHeader(lab: Lab) {
+    Column(
+        Modifier.padding(Dimens.lg),
+        verticalArrangement = Arrangement.spacedBy(Dimens.sm),
+    ) {
+        Text(lab.id, style = MonoStyle, color = LocalAppPalette.current.textTertiary)
+        lab.description?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
+    }
+    FactGrid(
+        listOf(
+            Fact("Models", lab.modelCount.toString(), true),
+            Fact("Providers", lab.providerCount.toString(), true),
+            Fact("Updated", lab.lastUpdated),
+        ),
+        compactColumns = 2,
+    )
 }

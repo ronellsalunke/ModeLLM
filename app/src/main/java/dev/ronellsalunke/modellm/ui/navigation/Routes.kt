@@ -1,15 +1,17 @@
 package dev.ronellsalunke.modellm.ui.navigation
 
+import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
-@Serializable data object TabsRoute
+@Serializable data object TabsRoute : NavKey
 
-@Serializable data object SettingsRoute
+@Serializable data object SettingsRoute : NavKey
 
-@Serializable data class CanonicalModelDetailRoute(val canonicalId: String)
+@Serializable data class CanonicalModelDetailRoute(val canonicalId: String) : NavKey
 
-@Serializable data class ProviderModelDetailRoute(val providerId: String, val modelId: String)
+@Serializable
+data class ProviderModelDetailRoute(val providerId: String, val modelId: String) : NavKey
 
-@Serializable data class ProviderDetailRoute(val providerId: String)
+@Serializable data class ProviderDetailRoute(val providerId: String) : NavKey
 
-@Serializable data class LabDetailRoute(val labId: String)
+@Serializable data class LabDetailRoute(val labId: String) : NavKey

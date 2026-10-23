@@ -48,6 +48,7 @@ import dev.ronellsalunke.modellm.ui.components.SectionHeader
 import dev.ronellsalunke.modellm.ui.components.SingleChoiceButtonGroup
 import dev.ronellsalunke.modellm.ui.components.SmallBackTopAppBar
 import dev.ronellsalunke.modellm.ui.components.safeDrawingBottomPadding
+import dev.ronellsalunke.modellm.ui.components.navigationAreaBottomPadding
 import dev.ronellsalunke.modellm.ui.components.safeDrawingHorizontalPadding
 import dev.ronellsalunke.modellm.ui.theme.Dimens
 import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
@@ -79,7 +80,9 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = koinViewMo
         CatalogDivider()
         LazyColumn(
             Modifier.weight(1f),
-            contentPadding = PaddingValues(bottom = Dimens.xl + safeDrawingBottomPadding()),
+            contentPadding = PaddingValues(
+                bottom = Dimens.xl + safeDrawingBottomPadding() + navigationAreaBottomPadding(),
+            ),
         ) {
             item {
                 AppearanceSettingsSection(

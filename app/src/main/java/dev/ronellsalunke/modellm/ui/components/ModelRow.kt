@@ -50,31 +50,33 @@ fun ModelRow(model: Model, onClick: () -> Unit) {
     val capabilities = remember(model) { model.capabilities() }
     val contextInfo = tokenLimit(model.limits.context)
     val priceInfo = compactPricePair(model.cost.input, model.cost.output)
-    Column(
-        Modifier.fillMaxWidth()
-            .heightIn(min = 96.dp)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
-    ) {
-        ModelHeaderRow(model)
-        Text(
-            "${model.providerName} · ${model.family ?: model.id}",
-            style = MaterialTheme.typography.bodySmall,
-            color = LocalAppPalette.current.textTertiary,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        Text(
-            "$contextInfo context · $priceInfo /1M",
-            style = MonoLabelStyle,
-            color = LocalAppPalette.current.textSecondary,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        ModelCapabilitiesRow(capabilities = capabilities, openWeights = model.openWeights)
+    Column(Modifier.fillMaxWidth()) {
+        Column(
+            Modifier.fillMaxWidth()
+                .heightIn(min = 96.dp)
+                .clickable(onClick = onClick)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
+        ) {
+            ModelHeaderRow(model)
+            Text(
+                "${model.providerName} · ${model.family ?: model.id}",
+                style = MaterialTheme.typography.bodySmall,
+                color = LocalAppPalette.current.textTertiary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                "$contextInfo context · $priceInfo /1M",
+                style = MonoLabelStyle,
+                color = LocalAppPalette.current.textSecondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            ModelCapabilitiesRow(capabilities = capabilities, openWeights = model.openWeights)
+        }
+        CatalogDivider()
     }
-    CatalogDivider()
 }
 
 @Composable
