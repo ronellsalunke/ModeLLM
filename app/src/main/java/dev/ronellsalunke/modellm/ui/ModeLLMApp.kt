@@ -43,6 +43,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.NavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -207,17 +209,22 @@ private fun AppNavDisplay(
         state = backEventState,
         isBackEnabled = backStack.size == 1 && pagerState.currentPage != ModelsPage,
         onBackCompleted = {
-            scope.launch {
-                val distance = pagerState.currentPage - ModelsPage
-                if (distance > 1) {
-                    // Multi-page animation pre-jumps and can settle one page short, so snap.
-                    pagerState.scrollToPage(ModelsPage)
-                } else {
-                    pagerState.animateScrollToPage(ModelsPage)
-                }
-            }
+            scope.launch { pagerState.animateScrollToPage(ModelsPage) }
         },
     )
+    val saveableStateDecorator: NavEntryDecorator<NavKey> =
+        rememberSaveableStateHolderNavEntryDecorator()
+    val viewModelStoreDecorator: NavEntryDecorator<NavKey> =
+        rememberViewModelStoreNavEntryDecorator()
+    // Hold the decorated entries stable so a pager scroll is not cancelled by a scene rebuild.
+    val entryDecorators: List<NavEntryDecorator<NavKey>> =
+        remember(saveableStateDecorator, viewModelStoreDecorator) {
+            listOf(saveableStateDecorator, viewModelStoreDecorator)
+        }
+    val entries: (NavKey) -> NavEntry<NavKey> =
+        remember(navigator, pagerState, swipeEnabled) {
+            appEntries(navigator, pagerState, swipeEnabled)
+        }
     Box(
         Modifier.fillMaxSize().graphicsLayer {
             val event =
@@ -234,15 +241,12 @@ private fun AppNavDisplay(
         NavDisplay(
             backStack = backStack,
             onBack = { navigator.goBack() },
-            entryDecorators = listOf(
-                rememberSaveableStateHolderNavEntryDecorator<NavKey>(),
-                rememberViewModelStoreNavEntryDecorator(),
-            ),
+            entryDecorators = entryDecorators,
             sceneStrategies = listOf(listDetailStrategy),
             transitionSpec = { pushedContentTransform() },
             popTransitionSpec = { pushedPopContentTransform() },
             predictivePopTransitionSpec = { edge -> pushedPredictivePopContentTransform(edge) },
-            entryProvider = appEntries(navigator, pagerState, swipeEnabled),
+            entryProvider = entries,
         )
     }
 }
@@ -309,8 +313,9 @@ private fun TabsPager(
         userScrollEnabled = swipeEnabled,
         key = { it },
     ) { page ->
-        // Composed neighbouring pages must not claim focus or shortcuts.
-        CompositionLocalProvider(LocalTabPageActive provides (page == pagerState.currentPage)) {
+        // Composed neighbouring pages must not claim focus or shortcuts. Keyed on the settled page
+        // so a programmatic tab scroll is not interrupted half way through.
+        CompositionLocalProvider(LocalTabPageActive provides (page == pagerState.settledPage)) {
             TabPage(page = page, navigator = navigator)
         }
     }
