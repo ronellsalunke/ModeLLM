@@ -32,7 +32,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
@@ -129,7 +128,6 @@ private fun AppShell(
 ) {
     val pagerState = rememberPagerState(pageCount = { TabItems.size })
     val scope = rememberCoroutineScope()
-    val focusRequester = remember { FocusRequester() }
     val shortcuts = remember { CatalogShortcutState() }
     val onSelectTab: (Int) -> Unit = { page ->
         navigator.popToRoot()
@@ -137,9 +135,9 @@ private fun AppShell(
     }
     // Restore root focus after navigation so app-wide shortcuts keep firing even when the
     // pushed screen holds no focus target of its own.
-    LaunchedEffect(backStack.size) { focusRequester.requestFocus() }
+    LaunchedEffect(backStack.size) { shortcuts.screenFocus.requestFocus() }
     BoxWithConstraints(
-        Modifier.fillMaxSize().focusRequester(focusRequester)
+        Modifier.fillMaxSize().focusRequester(shortcuts.screenFocus)
             .onPreviewKeyEvent { event -> event.tabShortcut(shortcuts, onSelectTab) }
             .focusable(),
     ) {

@@ -1,6 +1,5 @@
 package dev.ronellsalunke.modellm.ui.components
 
-import androidx.compose.foundation.focusable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -10,7 +9,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
@@ -25,11 +23,16 @@ internal fun KeyEvent.isControlShortcut(): Boolean =
 
 internal class CatalogShortcutActions(
     val searchFocus: FocusRequester,
-    val screenFocus: FocusRequester,
     val refresh: () -> Unit,
 )
 
-internal class CatalogShortcutState {
+internal class CatalogShortcutState(
+    /**
+     * Focus target shared by every tab page. It lives above the pager so restoring focus never
+     * asks the pager to bring a page into view, which would interrupt a swipe.
+     */
+    val screenFocus: FocusRequester = FocusRequester(),
+) {
     var actions: CatalogShortcutActions? = null
 
     fun handle(event: KeyEvent): Boolean {
@@ -57,7 +60,7 @@ internal fun dismissCatalogFocus(): () -> Unit {
     val shortcuts = LocalCatalogShortcuts.current
     return {
         focusManager.clearFocus()
-        shortcuts?.actions?.screenFocus?.requestFocus()
+        shortcuts?.screenFocus?.requestFocus()
     }
 }
 
@@ -74,12 +77,11 @@ fun Modifier.catalogShortcuts(
     searchFocusRequester: FocusRequester,
     onRefresh: () -> Unit,
 ): Modifier {
-    val screenFocusRequester = remember { FocusRequester() }
     val shortcuts = LocalCatalogShortcuts.current
     val active = LocalTabPageActive.current
     val refresh by rememberUpdatedState(onRefresh)
-    val actions = remember(searchFocusRequester, screenFocusRequester) {
-        CatalogShortcutActions(searchFocusRequester, screenFocusRequester) { refresh() }
+    val actions = remember(searchFocusRequester) {
+        CatalogShortcutActions(searchFocusRequester) { refresh() }
     }
     DisposableEffect(shortcuts, actions, active) {
         if (active) shortcuts?.actions = actions
@@ -88,10 +90,12 @@ fun Modifier.catalogShortcuts(
         }
     }
     LaunchedEffect(active) {
-        if (active) screenFocusRequester.requestFocus()
+        // Pull focus out of the page that just left the screen without focusing a node inside the
+        // pager, which would scroll the pager and could reverse an in-flight swipe.
+        if (active) shortcuts?.screenFocus?.requestFocus()
     }
-    return focusRequester(screenFocusRequester).onPreviewKeyEvent { event ->
+    return onPreviewKeyEvent { event ->
         if (!active) return@onPreviewKeyEvent false
         shortcuts?.handle(event) ?: false
-    }.focusable()
+    }
 }
