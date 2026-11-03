@@ -2,6 +2,7 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.androidx.baselineprofile)
     alias(libs.plugins.aboutlibraries)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
@@ -71,6 +72,11 @@ ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
 }
 
+baselineProfile {
+    // Store the generated profile in src/release so release builds reuse it without a device.
+    saveInSrc = true
+}
+
 detekt {
     buildUponDefaultConfig = true
     config.setFrom(rootProject.files("config/detekt/detekt.yml"))
@@ -119,6 +125,7 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinx.json)
 
     testImplementation(libs.junit)
+    baselineProfile(project(":baselineprofile"))
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

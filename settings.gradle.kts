@@ -24,3 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "ModeLLM"
 include(":app")
+include(":baselineprofile")
