@@ -59,7 +59,7 @@ fun AppSwitch(
             label = "AppSwitchThumbOffset",
         )
     val thumbVerticalOffset = (SwitchHeight - thumbSize) / 2
-    val shapes = MaterialTheme.shapes
+    val shape = MaterialTheme.shapes.extraSmall
     val toggleModifier =
         if (onCheckedChange != null) {
             Modifier.minimumInteractiveComponentSize()
@@ -77,14 +77,14 @@ fun AppSwitch(
             .then(toggleModifier)
             .wrapContentSize(Alignment.Center)
             .requiredSize(SwitchWidth, SwitchHeight)
-            .clip(shapes.small)
+            .clip(shape)
             .background(palette.track)
-            .border(SwitchBorderWidth, palette.border, shapes.small),
+            .border(SwitchBorderWidth, palette.border, shape),
     ) {
         Box(
             Modifier.offset(x = thumbOffset, y = thumbVerticalOffset)
                 .size(thumbSize)
-                .background(palette.thumb, shapes.small),
+                .background(palette.thumb, shape),
         )
     }
 }
