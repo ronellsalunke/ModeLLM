@@ -6,9 +6,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Spacer
@@ -20,13 +20,13 @@ import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.Icons
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -41,7 +41,6 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import dev.ronellsalunke.modellm.ui.theme.Dimens
@@ -171,19 +170,21 @@ fun rememberExternalLinkOpener(): (String) -> Unit {
 @Composable
 fun ExternalLink(label: String, url: String, modifier: Modifier = Modifier) {
     val openLink = rememberExternalLinkOpener()
-    TextButton(
+    Button(
         onClick = { openLink(url) },
-        modifier = modifier.heightIn(min = 48.dp).pointerHoverIcon(PointerIcon.Hand),
-        shape = MaterialTheme.shapes.small,
-        colors = ButtonDefaults.textButtonColors(contentColor = LocalAppPalette.current.brandText),
-        contentPadding = PaddingValues(horizontal = 4.dp),
+        modifier =
+            modifier
+                .height(ButtonDefaults.ExtraSmallContainerHeight)
+                .pointerHoverIcon(PointerIcon.Hand),
+        shape = MaterialTheme.shapes.extraSmall,
+        contentPadding = ButtonDefaults.ExtraSmallContentPadding,
     ) {
         Icon(
             Icons.AutoMirrored.Filled.OpenInNew,
             contentDescription = null,
-            modifier = Modifier.size(16.dp),
+            modifier = Modifier.size(ButtonDefaults.ExtraSmallIconSize),
         )
-        Spacer(Modifier.width(6.dp))
-        Text(label, textDecoration = TextDecoration.Underline)
+        Spacer(Modifier.width(ButtonDefaults.ExtraSmallIconSpacing))
+        Text(label)
     }
 }

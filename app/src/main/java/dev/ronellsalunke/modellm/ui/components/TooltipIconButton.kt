@@ -2,6 +2,7 @@ package dev.ronellsalunke.modellm.ui.components
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
@@ -31,6 +32,7 @@ fun TooltipIconButton(
         FilledTonalIconButton(
             onClick = onClick,
             modifier = modifier.pointerHoverIcon(PointerIcon.Hand),
+            shape = MaterialTheme.shapes.small
         ) {
             content()
         }

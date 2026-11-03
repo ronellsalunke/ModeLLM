@@ -30,6 +30,7 @@ import androidx.compose.material3.rememberTooltipState
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
+import androidx.compose.material3.ToggleButtonShapes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,6 +64,9 @@ fun FloatingTabBar(
     onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Fixed tab shape. It matches the radius the toggle would morph to when pressed, so the
+    // selected tab keeps one shape and never animates between corner sizes.
+    val tabShape = ToggleButtonDefaults.pressedShape
     HorizontalFloatingToolbar(
         expanded = true,
         modifier =
@@ -74,6 +78,7 @@ fun FloatingTabBar(
                         .only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
                 )
                 .selectableGroup(),
+        shape = ModelsDevShapes.extraLarge,
     ) {
         items.forEachIndexed { index, item ->
             val selected = index == selectedIndex
@@ -91,10 +96,13 @@ fun FloatingTabBar(
                     } else {
                         null
                     },
-                // ModelsDevShapes.medium is 6.dp, so keep the checked pill fully round.
+                // One radius for every state so the tab does not morph when pressed.
                 shapes =
-                    ToggleButtonDefaults.shapesFor(ToggleButtonDefaults.size)
-                        .copy(checkedShape = ToggleButtonDefaults.shape),
+                    ToggleButtonShapes(
+                        shape = tabShape,
+                        pressedShape = tabShape,
+                        checkedShape = tabShape,
+                    ),
             ) {
                 Text(
                     text = item.label,
