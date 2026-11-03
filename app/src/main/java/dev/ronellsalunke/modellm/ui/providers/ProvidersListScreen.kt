@@ -145,12 +145,15 @@ private fun ProviderRow(provider: Provider, onProviderClick: (String) -> Unit) {
             Modifier.fillMaxWidth()
                 .heightIn(min = CatalogRowMinHeight)
                 .clickable { onProviderClick(provider.id) }
-                .padding(Dimens.lg),
+                .padding(horizontal = Dimens.lg, vertical = Dimens.sm),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Dimens.md),
         ) {
             ProviderLogo(provider.id, provider.name)
-            Column(Modifier.weight(1f)) {
+            Column(
+                Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(Dimens.xs),
+            ) {
                 Text(
                     provider.name,
                     style = MaterialTheme.typography.titleSmall,

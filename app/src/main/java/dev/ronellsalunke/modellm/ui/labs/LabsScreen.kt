@@ -26,7 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.ronellsalunke.modellm.data.model.Lab
 import dev.ronellsalunke.modellm.data.repository.SyncState
@@ -155,30 +154,31 @@ private fun LabRow(lab: Lab, onLabClick: (String) -> Unit) {
     val providerCountText = pluralized(lab.providerCount, "provider")
     val updatedText = lab.lastUpdated ?: "–"
     Column(Modifier.fillMaxWidth()) {
-        Column(
+        Row(
             Modifier.fillMaxWidth()
                 .heightIn(min = CatalogRowMinHeight)
                 .clickable { onLabClick(lab.id) }
                 .padding(horizontal = Dimens.lg, vertical = Dimens.sm),
-            verticalArrangement = Arrangement.spacedBy(3.dp, Alignment.CenterVertically),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Dimens.md),
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
+            LabLogo(lab.id, lab.name)
+            Column(
+                Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(Dimens.xs),
             ) {
-                LabLogo(lab.id, lab.name)
                 Text(
                     lab.name,
                     style = MaterialTheme.typography.titleSmall,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
+                Text(
+                    "$modelCountText · $providerCountText · $updatedText",
+                    style = MonoLabelStyle,
+                    color = LocalAppPalette.current.textTertiary,
+                )
             }
-            Text(
-                "$modelCountText · $providerCountText · $updatedText",
-                style = MonoLabelStyle,
-                color = LocalAppPalette.current.textTertiary,
-            )
         }
         CatalogDivider()
     }

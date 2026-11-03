@@ -97,32 +97,33 @@ fun ModelIcons(modalities: List<Modality>, capabilities: List<Capability>, openW
 @Composable
 fun CanonicalModelRow(model: CanonicalModel, onClick: () -> Unit) {
     Column(Modifier.fillMaxWidth()) {
-        Column(
+        Row(
             Modifier.fillMaxWidth()
                 .heightIn(min = CatalogRowMinHeight)
                 .clickable(onClick = onClick)
                 .padding(horizontal = Dimens.lg, vertical = Dimens.sm),
-            verticalArrangement = Arrangement.spacedBy(3.dp, Alignment.CenterVertically),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Dimens.md),
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
+            LabLogo(model.labId, model.labName)
+            Column(
+                Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(Dimens.xs),
             ) {
-                LabLogo(model.labId, model.labName, 20.dp)
                 Text(
                     model.name,
                     style = MaterialTheme.typography.titleSmall,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
+                Text(
+                    model.id,
+                    style = MonoLabelStyle,
+                    color = LocalAppPalette.current.textTertiary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
-            Text(
-                model.id,
-                style = MonoLabelStyle,
-                color = LocalAppPalette.current.textTertiary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
         }
         CatalogDivider()
     }
