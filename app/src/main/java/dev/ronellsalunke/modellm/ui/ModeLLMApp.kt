@@ -68,12 +68,14 @@ import dev.ronellsalunke.modellm.ui.components.MediumWidthBreakpoint
 import dev.ronellsalunke.modellm.ui.components.isControlShortcut
 import dev.ronellsalunke.modellm.ui.labs.LabDetailScreen
 import dev.ronellsalunke.modellm.ui.labs.LabsScreen
+import dev.ronellsalunke.modellm.ui.licenses.LicensesScreen
 import dev.ronellsalunke.modellm.ui.models.CanonicalModelDetailScreen
 import dev.ronellsalunke.modellm.ui.models.ModelsListScreen
 import dev.ronellsalunke.modellm.ui.models.ProviderModelDetailScreen
 import dev.ronellsalunke.modellm.ui.navigation.AppNavigator
 import dev.ronellsalunke.modellm.ui.navigation.CanonicalModelDetailRoute
 import dev.ronellsalunke.modellm.ui.navigation.LabDetailRoute
+import dev.ronellsalunke.modellm.ui.navigation.LicensesRoute
 import dev.ronellsalunke.modellm.ui.navigation.ProviderDetailRoute
 import dev.ronellsalunke.modellm.ui.navigation.ProviderModelDetailRoute
 import dev.ronellsalunke.modellm.ui.navigation.SettingsRoute
@@ -266,7 +268,13 @@ private fun appEntries(
         TabsPager(pagerState, navigator, swipeEnabled)
     }
     entry<SettingsRoute>(metadata = ListDetailSceneStrategy.detailPane()) {
-        SettingsScreen(onBack = { navigator.goBack() })
+        SettingsScreen(
+            onBack = { navigator.goBack() },
+            onLicenses = { navigator.navigate(LicensesRoute) },
+        )
+    }
+    entry<LicensesRoute>(metadata = ListDetailSceneStrategy.detailPane()) {
+        LicensesScreen(onBack = { navigator.goBack() })
     }
     entry<CanonicalModelDetailRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
         CanonicalModelDetailScreen(

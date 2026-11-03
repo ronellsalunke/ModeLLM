@@ -5,10 +5,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ButtonGroupDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.SelectableDropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ToggleButtonShapes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -26,6 +28,12 @@ fun SingleChoiceButtonGroup(
     modifier: Modifier = Modifier,
 ) {
     val interactions = remember(labels) { labels.map { MutableInteractionSource() } }
+    val buttonShapes =
+        ToggleButtonShapes(
+            shape = MaterialTheme.shapes.small,
+            pressedShape = MaterialTheme.shapes.small,
+            checkedShape = MaterialTheme.shapes.small,
+        )
     ButtonGroup(
         overflowIndicator = { ButtonGroupDefaults.OverflowIndicator(it) },
         modifier = modifier.selectableGroup(),
@@ -38,13 +46,7 @@ fun SingleChoiceButtonGroup(
                     ToggleButton(
                         checked = selected,
                         onCheckedChange = { checked -> if (checked) onSelect(index) },
-                        shapes =
-                            when (index) {
-                                0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                                labels.lastIndex ->
-                                    ButtonGroupDefaults.connectedTrailingButtonShapes()
-                                else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-                            },
+                        shapes = buttonShapes,
                         interactionSource = interactions[index],
                         modifier =
                             Modifier.weight(1f).animateWidth(interactions[index]).semantics {

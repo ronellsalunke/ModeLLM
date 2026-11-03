@@ -7,6 +7,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable data object SettingsRoute : NavKey
 
+@Serializable data object LicensesRoute : NavKey
+
 @Serializable data class CanonicalModelDetailRoute(val canonicalId: String) : NavKey
 
 @Serializable

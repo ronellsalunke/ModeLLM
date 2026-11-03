@@ -148,11 +148,11 @@ private fun SearchClearButton(onClick: () -> Unit) {
 }
 
 @Composable
-fun ExternalLink(label: String, url: String, modifier: Modifier = Modifier) {
+fun rememberExternalLinkOpener(): (String) -> Unit {
     val handler = LocalUriHandler.current
     val context = LocalContext.current
-    TextButton(
-        onClick = {
+    return remember(handler, context) {
+        { url ->
             try {
                 val scheme = url.toUri().scheme
                 if (scheme != "https" && scheme != "http") {
@@ -164,7 +164,15 @@ fun ExternalLink(label: String, url: String, modifier: Modifier = Modifier) {
             } catch (_: ActivityNotFoundException) {
                 Toast.makeText(context, "No app can open this link", Toast.LENGTH_SHORT).show()
             }
-        },
+        }
+    }
+}
+
+@Composable
+fun ExternalLink(label: String, url: String, modifier: Modifier = Modifier) {
+    val openLink = rememberExternalLinkOpener()
+    TextButton(
+        onClick = { openLink(url) },
         modifier = modifier.heightIn(min = 48.dp).pointerHoverIcon(PointerIcon.Hand),
         shape = MaterialTheme.shapes.small,
         colors = ButtonDefaults.textButtonColors(contentColor = LocalAppPalette.current.brandText),

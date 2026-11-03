@@ -25,7 +25,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SheetValue
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
@@ -50,6 +49,7 @@ import dev.ronellsalunke.modellm.data.model.Lab
 import dev.ronellsalunke.modellm.data.model.Modality
 import dev.ronellsalunke.modellm.data.model.ModelFilters
 import dev.ronellsalunke.modellm.data.model.Provider
+import dev.ronellsalunke.modellm.ui.components.AppSwitch
 import dev.ronellsalunke.modellm.ui.components.CatalogDivider
 import dev.ronellsalunke.modellm.ui.components.LabLogo
 import dev.ronellsalunke.modellm.ui.components.LocalCatalogShortcuts
@@ -296,7 +296,7 @@ private fun ModalitiesAndCapabilitiesSection(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text("Open weights only", modifier = Modifier.weight(1f))
-        Switch(
+        AppSwitch(
             checked = filters.openWeights == true,
             onCheckedChange = { checked ->
                 onUpdateFilters { it.copy(openWeights = if (checked) true else null) }

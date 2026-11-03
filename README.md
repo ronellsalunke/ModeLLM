@@ -34,6 +34,7 @@ An offline-first Android client for [models.dev](https://models.dev)
 | Images | Coil 3 with SVG support |
 | Background work | WorkManager |
 | Settings | DataStore Preferences |
+| Licenses | AboutLibraries |
 | Navigation | Navigation Compose with type-safe routes |
 
 ## Requirements
@@ -87,6 +88,7 @@ app/src/main/java/dev/ronellsalunke/modellm/
 └── ui/
     ├── components/   Shared Compose components
     ├── labs/         Lab list and detail
+    ├── licenses/     Third-party license list
     ├── models/       Model list, filters, and detail
     ├── navigation/   Type-safe routes
     ├── providers/    Provider list and detail
@@ -109,6 +111,7 @@ Report bugs and request features in [GitHub Issues](https://github.com/ronellsal
 
 - Catalog data and logos: [models.dev](https://models.dev)
 - Fonts: Rubik and IBM Plex Mono, licensed under the SIL Open Font License
+- License metadata: [AboutLibraries](https://github.com/mikepenz/AboutLibraries)
 - Built with [Android Jetpack](https://developer.android.com/jetpack)
 
 ## License
