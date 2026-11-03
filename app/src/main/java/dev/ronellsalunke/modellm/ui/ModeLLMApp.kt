@@ -11,8 +11,8 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Science
+import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.MaterialTheme
@@ -90,7 +90,7 @@ import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
 import kotlinx.coroutines.launch
 
 private val TabItems = listOf(
-    FloatingTabItem("Models", Icons.AutoMirrored.Filled.List),
+    FloatingTabItem("Models", Icons.Default.SmartToy),
     FloatingTabItem("Providers", Icons.Default.Storage),
     FloatingTabItem("Labs", Icons.Default.Science),
 )
