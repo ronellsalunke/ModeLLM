@@ -36,6 +36,7 @@ data class ModelFilters(
     val inputModalities: Set<Modality> = emptySet(),
     val capabilities: Set<Capability> = emptySet(),
     val openWeights: Boolean? = null,
+    val decisionOnly: Boolean = false,
     val statuses: Set<String> = emptySet(),
     val knowledgeAfter: String? = null,
     val knowledgeBefore: String? = null,

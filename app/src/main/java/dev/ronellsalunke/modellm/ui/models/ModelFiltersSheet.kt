@@ -41,15 +41,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import dev.ronellsalunke.modellm.data.model.Capability
 import dev.ronellsalunke.modellm.data.model.Lab
 import dev.ronellsalunke.modellm.data.model.Modality
 import dev.ronellsalunke.modellm.data.model.ModelFilters
 import dev.ronellsalunke.modellm.data.model.Provider
-import dev.ronellsalunke.modellm.ui.components.AppSwitch
 import dev.ronellsalunke.modellm.ui.components.CatalogDivider
 import dev.ronellsalunke.modellm.ui.components.LabLogo
 import dev.ronellsalunke.modellm.ui.components.LocalCatalogShortcuts
@@ -197,7 +194,7 @@ private fun FilterSheetContent(
         )
         LazyColumn(Modifier.weight(1f)) {
             item {
-                ModalitiesAndCapabilitiesSection(filters, onUpdateFilters)
+                FilterOptionsSection(filters, onUpdateFilters)
                 KnowledgeCutoffSection(filters.knowledgeAfter) { cutoff ->
                     onUpdateFilters {
                         it.copy(knowledgeAfter = if (it.knowledgeAfter == cutoff) null else cutoff)
@@ -251,11 +248,11 @@ private fun LazyListScope.filterEntityItems(
 }
 
 @Composable
-private fun ModalitiesAndCapabilitiesSection(
+private fun FilterOptionsSection(
     filters: ModelFilters,
     onUpdateFilters: ((ModelFilters) -> ModelFilters) -> Unit,
 ) {
-    SectionHeader("Input modalities · match all")
+    SectionHeader("Input modalities")
     FlowRow(
         Modifier.padding(horizontal = Dimens.lg),
         horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
@@ -273,7 +270,7 @@ private fun ModalitiesAndCapabilitiesSection(
             )
         }
     }
-    SectionHeader("Capabilities · match all")
+    SectionHeader("Capabilities")
     FlowRow(
         Modifier.padding(horizontal = Dimens.lg),
         horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
@@ -291,17 +288,26 @@ private fun ModalitiesAndCapabilitiesSection(
             )
         }
     }
-    Row(
-        Modifier.fillMaxWidth().padding(horizontal = Dimens.lg),
-        verticalAlignment = Alignment.CenterVertically,
+    SectionHeader("Model")
+    FlowRow(
+        Modifier.padding(horizontal = Dimens.lg),
+        horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
     ) {
-        Text("Open weights only", modifier = Modifier.weight(1f))
-        AppSwitch(
-            checked = filters.openWeights == true,
-            onCheckedChange = { checked ->
-                onUpdateFilters { it.copy(openWeights = if (checked) true else null) }
+        FilterChip(
+            selected = filters.openWeights == true,
+            shape = MaterialTheme.shapes.small,
+            onClick = {
+                onUpdateFilters {
+                    it.copy(openWeights = if (it.openWeights == true) null else true)
+                }
             },
-            modifier = Modifier.semantics { contentDescription = "Open weights only" },
+            label = { Text("Open weights") },
+        )
+        FilterChip(
+            selected = filters.decisionOnly,
+            shape = MaterialTheme.shapes.small,
+            onClick = { onUpdateFilters { it.copy(decisionOnly = !it.decisionOnly) } },
+            label = { Text("Decision models") },
         )
     }
 }

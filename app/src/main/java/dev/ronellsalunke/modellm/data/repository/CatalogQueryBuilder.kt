@@ -8,6 +8,7 @@ import dev.ronellsalunke.modellm.data.model.ModelFilters
 import dev.ronellsalunke.modellm.data.model.ModelSort
 
 internal object CatalogQueryBuilder {
+    private const val DECISION_MODEL_TYPE = "decision"
     private val NON_ALPHANUMERIC = Regex("[^\\p{L}\\p{N}]+")
 
     fun buildCanonicalQuery(
@@ -58,6 +59,10 @@ internal object CatalogQueryBuilder {
         filters.openWeights?.let {
             conditions += "c.openWeights = ?"
             args += if (it) 1 else 0
+        }
+        if (filters.decisionOnly) {
+            conditions += "LOWER(c.modelType) = ?"
+            args += DECISION_MODEL_TYPE
         }
         if (filters.statuses.isNotEmpty()) {
             conditions +=
@@ -142,6 +147,10 @@ internal object CatalogQueryBuilder {
         filters.openWeights?.let { openWeights ->
             conditions += "m.openWeights = ?"
             args += if (openWeights) 1 else 0
+        }
+        if (filters.decisionOnly) {
+            conditions += "LOWER(m.modelType) = ?"
+            args += DECISION_MODEL_TYPE
         }
         if (filters.statuses.isNotEmpty()) {
             conditions += "m.status IN (${placeholders(filters.statuses.size)})"

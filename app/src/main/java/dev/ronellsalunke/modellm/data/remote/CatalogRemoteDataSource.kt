@@ -40,11 +40,15 @@ class CatalogRemoteDataSource(
                         }
                 }
                 val models = async {
-                    client.prepareGet("https://models.dev/models.json").execute { response ->
-                        response.bodyAsChannel().toInputStream().use { input ->
-                            json.decodeFromStream<Map<String, ModelDto>>(input)
+                    client
+                        .prepareGet("https://models.dev/models.json") {
+                            parameter("type", "all")
                         }
-                    }
+                        .execute { response ->
+                            response.bodyAsChannel().toInputStream().use { input ->
+                                json.decodeFromStream<Map<String, ModelDto>>(input)
+                            }
+                        }
                 }
                 val searchIndex = async {
                     client.prepareGet("https://models.dev/search-index.json").execute { response ->

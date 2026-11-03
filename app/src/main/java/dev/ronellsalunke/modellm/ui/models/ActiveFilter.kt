@@ -51,6 +51,9 @@ fun ModelFilters.activeFilters(providers: List<Provider>, labs: List<Lab>): List
         if (openWeights == true) {
             add(ActiveFilter("weights", "Open weights", copy(openWeights = null)))
         }
+        if (decisionOnly) {
+            add(ActiveFilter("decision", "Decision models", copy(decisionOnly = false)))
+        }
         knowledgeAfter?.let {
             add(
                 ActiveFilter(
