@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Refresh
@@ -32,18 +33,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.LinkAnnotation
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.TextLinkStyles
-import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.ronellsalunke.modellm.data.repository.SyncState
@@ -191,6 +186,7 @@ private fun SettingsTileGroup(content: @Composable ColumnScope.() -> Unit) {
 private fun SettingsListItem(
     onClick: (() -> Unit)? = null,
     enabled: Boolean = true,
+    shape: Shape = RectangleShape,
     supportingContent: (@Composable () -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
     headlineContent: @Composable () -> Unit,
@@ -204,6 +200,7 @@ private fun SettingsListItem(
     Row(
         Modifier.fillMaxWidth()
             .heightIn(min = SettingsListItemMinHeight)
+            .clip(shape)
             .then(clickModifier)
             .padding(horizontal = Dimens.lg, vertical = Dimens.xs),
         verticalAlignment = Alignment.CenterVertically,
@@ -236,6 +233,7 @@ private fun CatalogSettingsSection(
             SettingsListItem(
                 onClick = onRefresh,
                 enabled = state.syncState !is SyncState.Running,
+                shape = MaterialTheme.shapes.small,
                 trailingContent = {
                     if (state.syncState is SyncState.Running) {
                         CircularProgressIndicator(
@@ -302,33 +300,22 @@ private fun AboutSettingsSection(version: String, onLicenses: () -> Unit) {
                     )
                 },
             ) {
-                Text("GitHub")
+                Text("Source code")
+            }
+            CatalogDivider()
+            SettingsListItem(
+                onClick = { openLink(ModelsDevUrl) },
+                shape = RoundedCornerShape(bottomStart = 4.dp, bottomEnd = 4.dp),
+                trailingContent = {
+                    Icon(
+                        Icons.AutoMirrored.Filled.OpenInNew,
+                        contentDescription = null,
+                        tint = LocalAppPalette.current.textTertiary,
+                    )
+                },
+            ) {
+                Text("models.dev")
             }
         }
-        Spacer(Modifier.height(Dimens.sm))
-        Text(
-            modelsDevAnnotatedString(LocalAppPalette.current.brandText),
-            style = MaterialTheme.typography.bodyMedium,
-        )
     }
 }
-
-private fun modelsDevAnnotatedString(linkColor: Color): AnnotatedString =
-    buildAnnotatedString {
-        append("Model data and provider logos come from ")
-        withLink(
-            LinkAnnotation.Url(
-                ModelsDevUrl,
-                TextLinkStyles(
-                    style =
-                        SpanStyle(
-                            color = linkColor,
-                            textDecoration = TextDecoration.Underline,
-                        )
-                ),
-            )
-        ) {
-            append("models.dev")
-        }
-        append(".")
-    }
