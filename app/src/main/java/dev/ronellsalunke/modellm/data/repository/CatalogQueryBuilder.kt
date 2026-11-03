@@ -5,16 +5,20 @@ import androidx.sqlite.db.SupportSQLiteQuery
 import dev.ronellsalunke.modellm.data.model.Capability
 import dev.ronellsalunke.modellm.data.model.Modality
 import dev.ronellsalunke.modellm.data.model.ModelFilters
-import dev.ronellsalunke.modellm.data.model.ModelSort
 
 internal object CatalogQueryBuilder {
     private const val DECISION_MODEL_TYPE = "decision"
+    private const val CANONICAL_ORDER_BY =
+        "c.releaseDate IS NULL ASC, c.releaseDate DESC, " +
+            "c.lastUpdated DESC, c.name COLLATE NOCASE ASC"
+    private const val MODEL_ORDER_BY =
+        "m.releaseDate IS NULL ASC, m.releaseDate DESC, " +
+            "m.lastUpdated DESC, m.name COLLATE NOCASE ASC"
     private val NON_ALPHANUMERIC = Regex("[^\\p{L}\\p{N}]+")
 
     fun buildCanonicalQuery(
         query: String,
         filters: ModelFilters,
-        sort: ModelSort,
     ): SupportSQLiteQuery {
         val conditions = mutableListOf<String>()
         val args = mutableListOf<Any?>()
@@ -32,9 +36,8 @@ internal object CatalogQueryBuilder {
                 .takeIf { it.isNotEmpty() }
                 ?.joinToString(prefix = "WHERE ", separator = " AND ")
                 .orEmpty()
-        val order = canonicalOrderBy(sort)
         return SimpleSQLiteQuery(
-            "SELECT c.* FROM canonical_models c $where ORDER BY $order",
+            "SELECT c.* FROM canonical_models c $where ORDER BY $CANONICAL_ORDER_BY",
             args.toTypedArray(),
         )
     }
@@ -83,23 +86,9 @@ internal object CatalogQueryBuilder {
         }
     }
 
-    private fun canonicalOrderBy(sort: ModelSort): String =
-        when (sort) {
-            ModelSort.Newest ->
-                "c.releaseDate IS NULL ASC, c.releaseDate DESC, " +
-                    "c.lastUpdated DESC, c.name COLLATE NOCASE ASC"
-            ModelSort.Cheapest ->
-                "c.minInputCost IS NULL ASC, c.minInputCost ASC, " +
-                    "c.minOutputCost IS NULL ASC, c.minOutputCost ASC, c.name COLLATE NOCASE ASC"
-            ModelSort.LargestContext ->
-                "c.contextLimit IS NULL ASC, c.contextLimit DESC, c.name COLLATE NOCASE ASC"
-            ModelSort.Name -> "c.name COLLATE NOCASE ASC"
-        }
-
     fun buildModelQuery(
         query: String,
         filters: ModelFilters,
-        sort: ModelSort,
     ): SupportSQLiteQuery {
         val conditions = mutableListOf<String>()
         val args = mutableListOf<Any?>()
@@ -122,7 +111,7 @@ internal object CatalogQueryBuilder {
             FROM models m
             JOIN providers p ON p.id = m.providerId
             $whereClause
-            ORDER BY ${modelOrderBy(sort)}
+            ORDER BY $MODEL_ORDER_BY
         """
                 .trimIndent()
 
@@ -165,19 +154,6 @@ internal object CatalogQueryBuilder {
             args += knowledgeBefore
         }
     }
-
-    private fun modelOrderBy(sort: ModelSort): String =
-        when (sort) {
-            ModelSort.Newest ->
-                "m.releaseDate IS NULL ASC, m.releaseDate DESC, " +
-                    "m.lastUpdated DESC, m.name COLLATE NOCASE ASC"
-            ModelSort.Cheapest ->
-                "m.costInput IS NULL ASC, m.costInput ASC, " +
-                    "m.costOutput IS NULL ASC, m.costOutput ASC, m.name COLLATE NOCASE ASC"
-            ModelSort.LargestContext ->
-                "m.contextLimit IS NULL ASC, m.contextLimit DESC, m.name COLLATE NOCASE ASC"
-            ModelSort.Name -> "m.name COLLATE NOCASE ASC"
-        }
 
     private fun toFtsQuery(raw: String): String? {
         val tokens = raw.lowercase().split(NON_ALPHANUMERIC).filter { it.isNotEmpty() }

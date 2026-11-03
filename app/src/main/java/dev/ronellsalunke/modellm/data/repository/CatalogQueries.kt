@@ -9,7 +9,6 @@ import dev.ronellsalunke.modellm.data.model.CanonicalModel
 import dev.ronellsalunke.modellm.data.model.Lab
 import dev.ronellsalunke.modellm.data.model.Model
 import dev.ronellsalunke.modellm.data.model.ModelFilters
-import dev.ronellsalunke.modellm.data.model.ModelSort
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
@@ -24,10 +23,9 @@ open class CatalogQueries(
     fun observeCanonicalModels(
         query: String = "",
         filters: ModelFilters = ModelFilters(),
-        sort: ModelSort = ModelSort.Newest,
     ): Flow<List<CanonicalModel>> =
         canonicalDao
-            .observeModels(CatalogQueryBuilder.buildCanonicalQuery(query, filters, sort))
+            .observeModels(CatalogQueryBuilder.buildCanonicalQuery(query, filters))
             .map { rows -> rows.map { it.toDomain() } }
             .flowOn(Dispatchers.Default)
 

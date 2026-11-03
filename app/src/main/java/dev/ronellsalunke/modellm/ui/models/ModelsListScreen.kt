@@ -17,15 +17,11 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
@@ -46,7 +42,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.ronellsalunke.modellm.R
 import dev.ronellsalunke.modellm.data.model.CanonicalModel
 import dev.ronellsalunke.modellm.data.model.ModelFilters
-import dev.ronellsalunke.modellm.data.model.ModelSort
 import dev.ronellsalunke.modellm.data.repository.SyncState
 import dev.ronellsalunke.modellm.ui.components.AppPullToRefreshBox
 import dev.ronellsalunke.modellm.ui.components.CanonicalModelRow
@@ -69,14 +64,6 @@ import org.koin.androidx.compose.koinViewModel
 
 private val ChipCloseIconSize = 16.dp
 
-private fun ModelSort.label(): String =
-    when (this) {
-        ModelSort.Newest -> "Newest"
-        ModelSort.Cheapest -> "Cheapest"
-        ModelSort.LargestContext -> "Largest context"
-        ModelSort.Name -> "Name"
-    }
-
 @Composable
 fun ModelsListScreen(
     onModelClick: (CanonicalModel) -> Unit,
@@ -97,9 +84,7 @@ fun ModelsListScreen(
             .catalogShortcuts(searchFocusRequester, viewModel::refresh),
     ) {
         ModelsTopBar(
-            sort = state.sort,
             activeFiltersCount = activeFilters.size,
-            onSortSelected = viewModel::setSort,
             onOpenFilters = { filterSheet = true },
             onSettings = onSettings,
             onDismissKeyboard = dismissKeyboard,
@@ -166,9 +151,7 @@ private fun ModelsSearchField(
 
 @Composable
 private fun ModelsTopBar(
-    sort: ModelSort,
     activeFiltersCount: Int,
-    onSortSelected: (ModelSort) -> Unit,
     onOpenFilters: () -> Unit,
     onSettings: () -> Unit,
     onDismissKeyboard: () -> Unit,
@@ -186,7 +169,6 @@ private fun ModelsTopBar(
             }
         },
         actions = {
-            SortDropdownAction(sort, onSortSelected, onDismissKeyboard)
             FilterBadgeAction(activeFiltersCount) {
                 onDismissKeyboard()
                 onOpenFilters()
@@ -196,49 +178,6 @@ private fun ModelsTopBar(
             }
         },
     )
-}
-
-@Composable
-private fun SortDropdownAction(
-    currentSort: ModelSort,
-    onSortSelected: (ModelSort) -> Unit,
-    onBeforeOpen: () -> Unit,
-) {
-    var sortMenu by remember { mutableStateOf(false) }
-    Box {
-        TooltipIconButton(
-            text = "Sort by ${currentSort.label()}",
-            onClick = {
-                onBeforeOpen()
-                sortMenu = true
-            }
-        ) {
-            Icon(
-                Icons.Default.SwapVert,
-                contentDescription = "Sort by ${currentSort.label()}",
-            )
-        }
-        DropdownMenu(
-            expanded = sortMenu,
-            onDismissRequest = { sortMenu = false },
-            shape = MaterialTheme.shapes.medium,
-        ) {
-            ModelSort.entries.forEach { sort ->
-                DropdownMenuItem(
-                    text = { Text(sort.label()) },
-                    onClick = {
-                        onSortSelected(sort)
-                        sortMenu = false
-                    },
-                    trailingIcon = {
-                        if (sort == currentSort) {
-                            Icon(Icons.Default.Check, contentDescription = "Selected")
-                        }
-                    },
-                )
-            }
-        }
-    }
 }
 
 @Composable

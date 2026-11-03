@@ -9,7 +9,6 @@ import dev.ronellsalunke.modellm.data.local.dao.ProviderDao
 import dev.ronellsalunke.modellm.data.mapper.CatalogMapper
 import dev.ronellsalunke.modellm.data.model.Model
 import dev.ronellsalunke.modellm.data.model.ModelFilters
-import dev.ronellsalunke.modellm.data.model.ModelSort
 import dev.ronellsalunke.modellm.data.model.Provider
 import dev.ronellsalunke.modellm.data.remote.CatalogRemoteDataSource
 import java.io.IOException
@@ -71,10 +70,9 @@ class CatalogRepository(
     fun observeModels(
         query: String = "",
         filters: ModelFilters = ModelFilters(),
-        sort: ModelSort = ModelSort.Newest,
     ): Flow<List<Model>> =
         modelDao
-            .observeModels(CatalogQueryBuilder.buildModelQuery(query, filters, sort))
+            .observeModels(CatalogQueryBuilder.buildModelQuery(query, filters))
             .map { rows -> rows.map(mapper::toModel) }
             .flowOn(Dispatchers.Default)
 

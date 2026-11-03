@@ -24,13 +24,6 @@ enum class Capability {
     Temperature,
 }
 
-enum class ModelSort {
-    Newest,
-    Cheapest,
-    LargestContext,
-    Name,
-}
-
 data class ModelFilters(
     val providerIds: Set<String> = emptySet(),
     val inputModalities: Set<Modality> = emptySet(),

@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import dev.ronellsalunke.modellm.data.model.CanonicalModel
 import dev.ronellsalunke.modellm.data.model.Lab
 import dev.ronellsalunke.modellm.data.model.ModelFilters
-import dev.ronellsalunke.modellm.data.model.ModelSort
 import dev.ronellsalunke.modellm.data.model.Provider
 import dev.ronellsalunke.modellm.data.repository.CatalogRepository
 import dev.ronellsalunke.modellm.data.repository.SyncState
@@ -23,7 +22,6 @@ import kotlin.time.Duration.Companion.milliseconds
 
 data class ModelsUiState(
     val filters: ModelFilters = ModelFilters(),
-    val sort: ModelSort = ModelSort.Newest,
     val models: List<CanonicalModel>? = null,
     val providers: List<Provider> = emptyList(),
     val labs: List<Lab> = emptyList(),
@@ -34,7 +32,6 @@ data class ModelsUiState(
 private data class ModelSelection(
     val query: String,
     val filters: ModelFilters,
-    val sort: ModelSort,
 )
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
@@ -44,13 +41,12 @@ class ModelsViewModel(
 ) : ViewModel() {
     private val query = MutableStateFlow("")
     private val filters = MutableStateFlow(ModelFilters())
-    private val sort = MutableStateFlow(ModelSort.Newest)
     private val selection =
-        combine(query.debounce(150.milliseconds), filters, sort, ::ModelSelection)
+        combine(query.debounce(150.milliseconds), filters, ::ModelSelection)
     private val results =
         selection
             .flatMapLatest { selected ->
-                repository.observeCanonicalModels(selected.query, selected.filters, selected.sort)
+                repository.observeCanonicalModels(selected.query, selected.filters)
             }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
     private val catalog =
@@ -63,15 +59,13 @@ class ModelsViewModel(
         }
 
     val uiState =
-        combine(filters, sort, results, catalog, repository.observeLabs()) {
+        combine(filters, results, catalog, repository.observeLabs()) {
                 filters,
-                sort,
                 result,
                 catalog,
                 labs ->
                 ModelsUiState(
                     filters,
-                    sort,
                     result,
                     catalog.first,
                     labs,
@@ -91,10 +85,6 @@ class ModelsViewModel(
 
     fun updateFilters(transform: (ModelFilters) -> ModelFilters) {
         filters.update(transform)
-    }
-
-    fun setSort(value: ModelSort) {
-        sort.value = value
     }
 
     fun clearFilters() {
