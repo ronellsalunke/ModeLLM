@@ -164,7 +164,7 @@ val MonoLabelStyle =
     TextStyle(
         fontFamily = IbmPlexMonoFamily,
         fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 14.sp,
+        fontSize = 13.sp,
+        lineHeight = 18.sp,
         letterSpacing = 0.sp,
     )

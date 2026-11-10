@@ -55,6 +55,7 @@ import dev.ronellsalunke.modellm.ui.theme.Dimens
 import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
 import dev.ronellsalunke.modellm.ui.theme.MonoLabelStyle
 import dev.ronellsalunke.modellm.ui.theme.MonoStyle
+import dev.ronellsalunke.modellm.ui.util.groupedNumber
 import dev.ronellsalunke.modellm.ui.util.pluralized
 import dev.ronellsalunke.modellm.ui.util.ModelsDevLinks
 import org.koin.androidx.compose.koinViewModel
@@ -150,7 +151,6 @@ private fun LabsEmptyState(
 
 @Composable
 private fun LabRow(lab: Lab, onLabClick: (String) -> Unit) {
-    val modelCountText = pluralized(lab.modelCount, "model")
     val providerCountText = pluralized(lab.providerCount, "provider")
     val updatedText = lab.lastUpdated ?: "–"
     Column(Modifier.fillMaxWidth()) {
@@ -174,11 +174,14 @@ private fun LabRow(lab: Lab, onLabClick: (String) -> Unit) {
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    "$modelCountText · $providerCountText · $updatedText",
+                    "$providerCountText · $updatedText",
                     style = MonoLabelStyle,
                     color = LocalAppPalette.current.textTertiary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
+            Text(groupedNumber(lab.modelCount), style = MonoLabelStyle)
         }
         CatalogDivider()
     }

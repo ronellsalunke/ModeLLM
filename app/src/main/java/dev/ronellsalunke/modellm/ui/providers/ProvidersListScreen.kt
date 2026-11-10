@@ -26,7 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.ronellsalunke.modellm.data.model.Provider
 import dev.ronellsalunke.modellm.data.repository.SyncState
@@ -46,7 +45,7 @@ import dev.ronellsalunke.modellm.ui.components.navigationBarBottomPadding
 import dev.ronellsalunke.modellm.ui.components.tabScreenPadding
 import dev.ronellsalunke.modellm.ui.theme.Dimens
 import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
-import dev.ronellsalunke.modellm.ui.theme.MonoStyle
+import dev.ronellsalunke.modellm.ui.theme.MonoLabelStyle
 import dev.ronellsalunke.modellm.ui.util.groupedNumber
 import org.koin.androidx.compose.koinViewModel
 
@@ -163,14 +162,14 @@ private fun ProviderRow(provider: Provider, onProviderClick: (String) -> Unit) {
                 provider.npm?.let {
                     Text(
                         it,
-                        style = MonoStyle,
+                        style = MonoLabelStyle,
                         color = LocalAppPalette.current.textTertiary,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
-            Text(groupedNumber(provider.modelCount), style = MonoStyle)
+            Text(groupedNumber(provider.modelCount), style = MonoLabelStyle)
         }
         CatalogDivider()
     }
