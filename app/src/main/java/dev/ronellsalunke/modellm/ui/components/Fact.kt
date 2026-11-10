@@ -115,7 +115,10 @@ fun ProviderFacts(provider: Provider, showIdentity: Boolean = true) {
         style = MonoStyle,
         modifier = Modifier.padding(horizontal = Dimens.lg),
     )
-    FlowRow(Modifier.padding(Dimens.lg), horizontalArrangement = Arrangement.spacedBy(Dimens.sm)) {
+    FlowRow(
+        Modifier.padding(start = Dimens.lg, top = Dimens.lg, end = Dimens.lg),
+        horizontalArrangement = Arrangement.spacedBy(Dimens.sm),
+    ) {
         provider.doc?.let { ExternalLink("Documentation", it) }
         provider.api?.let { ExternalLink("API", it) }
     }

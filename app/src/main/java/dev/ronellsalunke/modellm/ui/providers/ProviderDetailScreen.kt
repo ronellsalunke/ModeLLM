@@ -74,7 +74,6 @@ fun ProviderDetailScreen(providerId: String, onBack: () -> Unit, onModelClick: (
                     Column {
                         Spacer(Modifier.height(Dimens.lg))
                         ProviderFacts(provider, showIdentity = false)
-                        CatalogDivider()
                         SectionHeader("Models (${provider.modelCount})")
                         if (state.models.isEmpty()) EmptyState("No models listed")
                     }

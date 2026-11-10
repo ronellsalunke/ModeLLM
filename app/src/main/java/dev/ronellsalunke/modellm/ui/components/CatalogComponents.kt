@@ -60,9 +60,15 @@ val CatalogRowMinHeight = 64.dp
 fun SectionHeader(title: String) {
     Text(
         title.uppercase(),
-        style = MaterialTheme.typography.labelSmall,
+        style = MaterialTheme.typography.labelMedium,
         color = LocalAppPalette.current.textTertiary,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.lg, vertical = Dimens.md),
+        modifier =
+            Modifier.fillMaxWidth().padding(
+                start = Dimens.lg,
+                top = Dimens.xl,
+                end = Dimens.lg,
+                bottom = Dimens.xs,
+            ),
     )
 }
 

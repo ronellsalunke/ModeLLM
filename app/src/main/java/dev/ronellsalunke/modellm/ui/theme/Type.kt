@@ -137,8 +137,8 @@ val Typography =
             TextStyle(
                 fontFamily = RubikFamily,
                 fontWeight = FontWeight.Medium,
-                fontSize = 12.sp,
-                lineHeight = 16.sp,
+                fontSize = 13.sp,
+                lineHeight = 18.sp,
                 letterSpacing = 0.sp,
             ),
         labelSmall =
