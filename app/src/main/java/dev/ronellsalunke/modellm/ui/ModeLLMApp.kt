@@ -80,6 +80,7 @@ import dev.ronellsalunke.modellm.ui.navigation.ProviderDetailRoute
 import dev.ronellsalunke.modellm.ui.navigation.ProviderModelDetailRoute
 import dev.ronellsalunke.modellm.ui.navigation.SettingsRoute
 import dev.ronellsalunke.modellm.ui.navigation.TabsRoute
+import dev.ronellsalunke.modellm.ui.navigation.assistWebUri
 import dev.ronellsalunke.modellm.ui.navigation.pushedContentTransform
 import dev.ronellsalunke.modellm.ui.navigation.pushedPopContentTransform
 import dev.ronellsalunke.modellm.ui.navigation.pushedPredictivePopContentTransform
@@ -87,6 +88,7 @@ import dev.ronellsalunke.modellm.ui.providers.ProviderDetailScreen
 import dev.ronellsalunke.modellm.ui.providers.ProvidersListScreen
 import dev.ronellsalunke.modellm.ui.settings.SettingsScreen
 import dev.ronellsalunke.modellm.ui.theme.LocalAppPalette
+import dev.ronellsalunke.modellm.ui.util.ModelsDevLinks
 import kotlinx.coroutines.launch
 
 private val TabItems = listOf(
@@ -106,7 +108,7 @@ private const val LabsPage = 2
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
-fun ModeLLMApp() {
+fun ModeLLMApp(onAssistWebUri: (String?) -> Unit) {
     val backStack = rememberNavBackStack(TabsRoute)
     val navigator = remember(backStack) { AppNavigator(backStack) }
     val adaptiveInfo = currentWindowAdaptiveInfoV2()
@@ -118,7 +120,7 @@ fun ModeLLMApp() {
         color = LocalAppPalette.current.background,
         contentColor = MaterialTheme.colorScheme.onBackground,
     ) {
-        AppShell(backStack, navigator, directive)
+        AppShell(backStack, navigator, directive, onAssistWebUri)
     }
 }
 
@@ -127,10 +129,15 @@ private fun AppShell(
     backStack: NavBackStack<NavKey>,
     navigator: AppNavigator,
     directive: PaneScaffoldDirective,
+    onAssistWebUri: (String?) -> Unit,
 ) {
     val pagerState = rememberPagerState(pageCount = { TabItems.size })
     val scope = rememberCoroutineScope()
     val shortcuts = remember { CatalogShortcutState() }
+    val route = backStack.lastOrNull()
+    val webUri =
+        if (route is TabsRoute) tabWebUri(pagerState.settledPage) else route?.assistWebUri()
+    LaunchedEffect(webUri) { onAssistWebUri(webUri) }
     val onSelectTab: (Int) -> Unit = { page ->
         navigator.popToRoot()
         scope.launch { pagerState.animateScrollToPage(page) }
@@ -300,7 +307,9 @@ private fun appEntries(
             route.providerId,
             onBack = { navigator.goBack() },
             onModelClick = {
-                navigator.navigate(ProviderModelDetailRoute(it.providerId, it.id))
+                navigator.navigate(
+                    ProviderModelDetailRoute(it.providerId, it.id, it.canonicalModelId)
+                )
             },
         )
     }
@@ -351,6 +360,14 @@ private fun DetailPlaceholder(text: String) {
         Text(text, style = MaterialTheme.typography.titleMedium)
     }
 }
+
+private fun tabWebUri(page: Int): String? =
+    when (page) {
+        ModelsPage -> ModelsDevLinks.models()
+        ProvidersPage -> ModelsDevLinks.providers()
+        LabsPage -> ModelsDevLinks.labs()
+        else -> null
+    }
 
 /** Switches tabs with Ctrl+1, Ctrl+2, and Ctrl+3; forwards other Ctrl shortcuts. */
 private fun KeyEvent.tabShortcut(

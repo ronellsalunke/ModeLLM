@@ -1,5 +1,6 @@
 package dev.ronellsalunke.modellm
 
+import android.app.assist.AssistContent
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.KeyboardShortcutGroup
@@ -10,6 +11,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.getValue
+import androidx.core.net.toUri
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -26,6 +28,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class MainActivity : ComponentActivity() {
     private val settingsViewModel: SettingsViewModel by viewModel()
     private var splashTimedOut = false
+    private var assistWebUri: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().setKeepOnScreenCondition {
@@ -57,9 +60,14 @@ class MainActivity : ComponentActivity() {
                 dynamicColor = settings.dynamicColor,
                 animateThemeChanges = settingsLoaded,
             ) {
-                ModeLLMApp()
+                ModeLLMApp(onAssistWebUri = { assistWebUri = it })
             }
         }
+    }
+
+    override fun onProvideAssistContent(outContent: AssistContent?) {
+        super.onProvideAssistContent(outContent)
+        outContent?.webUri = assistWebUri?.toUri()
     }
 
     override fun onProvideKeyboardShortcuts(

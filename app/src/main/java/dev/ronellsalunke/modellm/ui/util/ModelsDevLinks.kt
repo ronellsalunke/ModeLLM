@@ -5,6 +5,12 @@ import android.net.Uri
 object ModelsDevLinks {
     const val BASEURL = "https://models.dev"
 
+    fun models(): String = "$BASEURL/models"
+
+    fun providers(): String = "$BASEURL/providers"
+
+    fun labs(): String = "$BASEURL/labs"
+
     // Canonical ids look like "lab/model", so keep the separator unencoded.
     fun model(canonicalId: String): String =
         "$BASEURL/models/${Uri.encode(canonicalId, "/")}"
