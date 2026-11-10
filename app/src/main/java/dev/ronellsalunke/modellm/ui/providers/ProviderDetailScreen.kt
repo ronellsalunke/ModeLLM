@@ -20,8 +20,8 @@ import dev.ronellsalunke.modellm.ui.components.CatalogDivider
 import dev.ronellsalunke.modellm.ui.components.DetailTopAppBar
 import dev.ronellsalunke.modellm.ui.components.EmptyState
 import dev.ronellsalunke.modellm.ui.components.ErrorState
-import dev.ronellsalunke.modellm.ui.components.ModelRow
 import dev.ronellsalunke.modellm.ui.components.MinGridCellWidth
+import dev.ronellsalunke.modellm.ui.components.ProviderModelCard
 import dev.ronellsalunke.modellm.ui.components.navigationAreaBottomPadding
 import dev.ronellsalunke.modellm.ui.components.ProviderFacts
 import dev.ronellsalunke.modellm.ui.components.SectionHeader
@@ -83,7 +83,7 @@ fun ProviderDetailScreen(providerId: String, onBack: () -> Unit, onModelClick: (
                     key = { "${it.providerId}/${it.id}" },
                     contentType = { "model" },
                 ) { model ->
-                    ModelRow(model) { onModelClick(model) }
+                    ProviderModelCard(model) { onModelClick(model) }
                 }
             }
     }

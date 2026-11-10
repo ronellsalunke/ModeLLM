@@ -35,7 +35,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.ronellsalunke.modellm.data.model.CanonicalModel
 import dev.ronellsalunke.modellm.data.model.Model
 import dev.ronellsalunke.modellm.data.repository.SyncState
-import dev.ronellsalunke.modellm.ui.components.CanonicalProviderRow
 import dev.ronellsalunke.modellm.ui.components.CatalogDivider
 import dev.ronellsalunke.modellm.ui.components.DetailTopAppBar
 import dev.ronellsalunke.modellm.ui.components.EmptyState
@@ -43,6 +42,7 @@ import dev.ronellsalunke.modellm.ui.components.ErrorState
 import dev.ronellsalunke.modellm.ui.components.Fact
 import dev.ronellsalunke.modellm.ui.components.FactGrid
 import dev.ronellsalunke.modellm.ui.components.MinGridCellWidth
+import dev.ronellsalunke.modellm.ui.components.ProviderModelCard
 import dev.ronellsalunke.modellm.ui.components.navigationAreaBottomPadding
 import dev.ronellsalunke.modellm.ui.components.SectionHeader
 import dev.ronellsalunke.modellm.ui.components.ShareIconButton
@@ -137,7 +137,7 @@ private fun CanonicalModelDetailContent(
             }
         }
         items(providers, key = { "${it.providerId}/${it.id}" }) { provider ->
-            CanonicalProviderRow(provider, model.labName) {
+            ProviderModelCard(provider, title = provider.providerName) {
                 onProviderModelClick(provider.providerId, provider.id)
             }
         }

@@ -21,7 +21,6 @@ import dev.ronellsalunke.modellm.data.model.Capability
 import dev.ronellsalunke.modellm.data.model.Modality
 import dev.ronellsalunke.modellm.data.model.Model
 import dev.ronellsalunke.modellm.data.model.ModelCost
-import dev.ronellsalunke.modellm.data.model.Provider
 import dev.ronellsalunke.modellm.data.model.ReasoningOption
 import dev.ronellsalunke.modellm.data.repository.SyncState
 import dev.ronellsalunke.modellm.ui.components.CapabilityBadge
@@ -32,7 +31,6 @@ import dev.ronellsalunke.modellm.ui.components.ErrorState
 import dev.ronellsalunke.modellm.ui.components.Fact
 import dev.ronellsalunke.modellm.ui.components.FactGrid
 import dev.ronellsalunke.modellm.ui.components.ModalityTile
-import dev.ronellsalunke.modellm.ui.components.ProviderFacts
 import dev.ronellsalunke.modellm.ui.components.SectionHeader
 import dev.ronellsalunke.modellm.ui.components.ShareIconButton
 import dev.ronellsalunke.modellm.ui.components.StatusChip
@@ -83,7 +81,6 @@ fun ProviderModelDetailScreen(providerId: String, modelId: String, onBack: () ->
         } else {
             ProviderModelDetailContent(
                 model = model,
-                provider = state.provider,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -106,7 +103,6 @@ private fun ProviderModelEmptyState(
 @Composable
 private fun ProviderModelDetailContent(
     model: Model,
-    provider: Provider?,
     modifier: Modifier = Modifier,
 ) {
     val facts = remember(model) { providerModelFacts(model) }
@@ -124,8 +120,6 @@ private fun ProviderModelDetailContent(
             ModelPricingSection(model.cost)
             ModelCapabilitiesSection(capabilities)
             ModelReasoningSection(model.reasoningOptions)
-            SectionHeader("Provider facts")
-            provider?.let { ProviderFacts(it) }
         }
     }
 }

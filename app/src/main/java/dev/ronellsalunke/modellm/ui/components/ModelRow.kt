@@ -46,9 +46,10 @@ fun Model.capabilities(): List<Capability> = buildList {
 }
 
 @Composable
-fun ModelRow(model: Model, onClick: () -> Unit) {
+fun ProviderModelCard(model: Model, title: String = model.name, onClick: () -> Unit) {
     val capabilities = remember(model) { model.capabilities() }
     val contextInfo = tokenLimit(model.limits.context)
+    val outputInfo = tokenLimit(model.limits.output)
     val priceInfo = compactPricePair(model.cost.input, model.cost.output)
     Column(Modifier.fillMaxWidth()) {
         Column(
@@ -58,16 +59,16 @@ fun ModelRow(model: Model, onClick: () -> Unit) {
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
         ) {
-            ModelHeaderRow(model)
+            ProviderModelHeader(model, title)
             Text(
-                "${model.providerName} · ${model.family ?: model.id}",
-                style = MaterialTheme.typography.bodySmall,
+                model.id,
+                style = MonoLabelStyle,
                 color = LocalAppPalette.current.textTertiary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                "$contextInfo context · $priceInfo /1M",
+                "$contextInfo ctx · $outputInfo out · $priceInfo /1M",
                 style = MonoLabelStyle,
                 color = LocalAppPalette.current.textSecondary,
                 maxLines = 1,
@@ -80,9 +81,9 @@ fun ModelRow(model: Model, onClick: () -> Unit) {
 }
 
 @Composable
-private fun ModelHeaderRow(model: Model) {
+private fun ProviderModelHeader(model: Model, title: String) {
     val isDeprecated = model.status.equals("deprecated", true)
-    val nameColor =
+    val titleColor =
         if (isDeprecated) LocalAppPalette.current.textSecondary
         else MaterialTheme.colorScheme.onSurface
     Row(
@@ -91,9 +92,9 @@ private fun ModelHeaderRow(model: Model) {
     ) {
         ProviderLogo(model.providerId, model.providerName, 20.dp)
         Text(
-            model.name,
+            title,
             style = MaterialTheme.typography.titleSmall,
-            color = nameColor,
+            color = titleColor,
             modifier = Modifier.weight(1f),
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
