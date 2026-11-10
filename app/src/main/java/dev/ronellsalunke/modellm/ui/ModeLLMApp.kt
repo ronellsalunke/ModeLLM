@@ -287,7 +287,11 @@ private fun appEntries(
         CanonicalModelDetailScreen(
             route.canonicalId,
             onBack = { navigator.goBack() },
-            onProviderClick = { navigator.navigate(ProviderDetailRoute(it)) },
+            onProviderModelClick = { providerId, modelId ->
+                navigator.navigate(
+                    ProviderModelDetailRoute(providerId, modelId, route.canonicalId)
+                )
+            },
         )
     }
     entry<ProviderModelDetailRoute>(metadata = ListDetailSceneStrategy.detailPane()) { route ->

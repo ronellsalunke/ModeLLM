@@ -67,7 +67,7 @@ private val CopyIconSize = 16.dp
 fun CanonicalModelDetailScreen(
     canonicalId: String,
     onBack: () -> Unit,
-    onProviderClick: (String) -> Unit,
+    onProviderModelClick: (providerId: String, modelId: String) -> Unit,
 ) {
     val viewModel =
         koinViewModel<CanonicalModelDetailViewModel>(
@@ -93,7 +93,7 @@ fun CanonicalModelDetailScreen(
             CanonicalModelDetailContent(
                 model = model,
                 providers = state.providers,
-                onProviderClick = onProviderClick,
+                onProviderModelClick = onProviderModelClick,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -117,7 +117,7 @@ private fun CanonicalModelEmptyState(
 private fun CanonicalModelDetailContent(
     model: CanonicalModel,
     providers: List<Model>,
-    onProviderClick: (String) -> Unit,
+    onProviderModelClick: (providerId: String, modelId: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val facts = remember(model) { canonicalModelFacts(model) }
@@ -138,7 +138,7 @@ private fun CanonicalModelDetailContent(
         }
         items(providers, key = { "${it.providerId}/${it.id}" }) { provider ->
             CanonicalProviderRow(provider, model.labName) {
-                onProviderClick(provider.providerId)
+                onProviderModelClick(provider.providerId, provider.id)
             }
         }
     }
