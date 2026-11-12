@@ -1,6 +1,7 @@
 package dev.ronellsalunke.modellm
 
 import android.app.assist.AssistContent
+import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.KeyboardShortcutGroup
@@ -19,22 +20,38 @@ import dev.ronellsalunke.modellm.data.settings.ThemeMode
 import dev.ronellsalunke.modellm.ui.ModeLLMApp
 import dev.ronellsalunke.modellm.ui.settings.SettingsViewModel
 import dev.ronellsalunke.modellm.ui.theme.ModeLLMTheme
+import dev.ronellsalunke.modellm.ui.widget.WidgetRefresher
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import kotlin.time.Duration.Companion.milliseconds
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), KoinComponent {
     private val settingsViewModel: SettingsViewModel by viewModel()
+    private val widgetRefresher: WidgetRefresher by inject()
     private var splashTimedOut = false
     private var assistWebUri: String? = null
+    private val canonicalId = MutableStateFlow<String?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().setKeepOnScreenCondition {
             !splashTimedOut && !settingsViewModel.isSettingsLoaded.value
         }
         super.onCreate(savedInstanceState)
+        // Below API 31, Glance/Core cannot re-resolve day/night colors without a new
+        // composition. Refresh on app start and activity recreation after uiMode changes.
+        lifecycleScope.launch {
+            widgetRefresher.tryRefresh(TAG)
+        }
+        canonicalId.value = if (savedInstanceState != null) {
+            savedInstanceState.getString(PENDING_CANONICAL_ID)
+        } else {
+            intent?.getStringExtra(EXTRA_CANONICAL_ID)
+        }
         lifecycleScope.launch {
             val loaded =
                 withTimeoutOrNull(SPLASH_TIMEOUT_MS.milliseconds) {
@@ -48,6 +65,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val settings by settingsViewModel.settings.collectAsStateWithLifecycle()
+            val initialCanonicalId by canonicalId.collectAsStateWithLifecycle()
             val settingsLoaded by settingsViewModel.isSettingsLoaded.collectAsStateWithLifecycle()
             val darkTheme =
                 when (settings.themeMode) {
@@ -60,7 +78,14 @@ class MainActivity : ComponentActivity() {
                 dynamicColor = settings.dynamicColor,
                 animateThemeChanges = settingsLoaded,
             ) {
-                ModeLLMApp(onAssistWebUri = { assistWebUri = it })
+                ModeLLMApp(
+                    onAssistWebUri = { assistWebUri = it },
+                    initialCanonicalId = initialCanonicalId,
+                    onCanonicalIdHandled = {
+                        canonicalId.value = null
+                        intent.removeExtra(EXTRA_CANONICAL_ID)
+                    },
+                )
             }
         }
     }
@@ -68,6 +93,17 @@ class MainActivity : ComponentActivity() {
     override fun onProvideAssistContent(outContent: AssistContent?) {
         super.onProvideAssistContent(outContent)
         outContent?.webUri = assistWebUri?.toUri()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        canonicalId.value = intent.getStringExtra(EXTRA_CANONICAL_ID)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(PENDING_CANONICAL_ID, canonicalId.value)
     }
 
     override fun onProvideKeyboardShortcuts(
@@ -85,7 +121,10 @@ class MainActivity : ComponentActivity() {
         )))
     }
 
-    private companion object {
-        const val SPLASH_TIMEOUT_MS = 500L
+    companion object {
+        const val EXTRA_CANONICAL_ID = "dev.ronellsalunke.modellm.extra.CANONICAL_ID"
+        private const val TAG = "MainActivity"
+        private const val PENDING_CANONICAL_ID = "pending_canonical_id"
+        private const val SPLASH_TIMEOUT_MS = 500L
     }
 }

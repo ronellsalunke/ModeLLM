@@ -25,6 +25,12 @@ interface CanonicalDao {
     )
     fun observeModels(query: SupportSQLiteQuery): Flow<List<CanonicalModelEntity>>
 
+    @Query(
+        "SELECT * FROM canonical_models ORDER BY releaseDate IS NULL ASC, releaseDate DESC, " +
+            "lastUpdated DESC, name COLLATE NOCASE ASC LIMIT :limit"
+    )
+    fun observeNewestModels(limit: Int): Flow<List<CanonicalModelEntity>>
+
     @Query("SELECT * FROM canonical_models WHERE LOWER(canonicalId) = LOWER(:canonicalId)")
     fun observeModel(canonicalId: String): Flow<CanonicalModelEntity?>
 

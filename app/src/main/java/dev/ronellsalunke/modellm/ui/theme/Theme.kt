@@ -28,7 +28,7 @@ val LocalMaterialYouEnabled = staticCompositionLocalOf { false }
 
 private const val ThemeAnimationMillis = 300
 
-private val LightColorScheme =
+internal val LightColorScheme =
     lightColorScheme(
         primary = BrandOrange,
         onPrimary = Color(0xFF2A1700),
@@ -68,7 +68,7 @@ private val LightColorScheme =
         surfaceContainerHighest = Color(0xFFEBEBEB),
     )
 
-private val DarkColorScheme =
+internal val DarkColorScheme =
     darkColorScheme(
         primary = BrandOrange,
         onPrimary = Color(0xFF2A1700),

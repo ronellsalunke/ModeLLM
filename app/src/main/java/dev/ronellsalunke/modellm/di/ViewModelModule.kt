@@ -23,5 +23,5 @@ val viewModelModule = module {
     }
     viewModel { ProvidersViewModel(get(), get()) }
     viewModel { (providerId: String) -> ProviderDetailViewModel(providerId, get(), get()) }
-    viewModel { SettingsViewModel(get(), get(), get()) }
+    viewModel { SettingsViewModel(get(), get(), get(), get()) }
 }

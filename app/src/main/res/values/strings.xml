@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">ModeLLM</string>
+    <string name="widget_newest_models_name">Newest models</string>
+    <string name="widget_newest_models_description">Browse the 20 newest models in your catalog.</string>
+    <string name="widget_empty_title">No models yet</string>
+    <string name="widget_header">Latest models</string>
+    <string name="widget_refresh">Refresh models</string>
+    <string name="widget_empty_body">Open ModeLLM to sync the catalog.</string>
+    <string name="widget_loading">Loading models…</string>
+    <string name="widget_preview_model_one">Latest model</string>
+    <string name="widget_preview_model_two">Another model</string>
+    <string name="widget_preview_model_three">More models</string>
 </resources>

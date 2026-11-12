@@ -3,6 +3,7 @@ package dev.ronellsalunke.modellm
 import android.app.Application
 import dev.ronellsalunke.modellm.data.sync.CatalogSyncScheduler
 import dev.ronellsalunke.modellm.di.appModules
+import dev.ronellsalunke.modellm.ui.widget.WidgetThemeWorker
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -21,6 +22,7 @@ class ModeLLMApplication : Application(), KoinComponent {
         }
 
         syncScheduler.schedulePeriodicSync()
+        WidgetThemeWorker.schedule(this)
         syncScheduler.ensureInitialSync()
     }
 }

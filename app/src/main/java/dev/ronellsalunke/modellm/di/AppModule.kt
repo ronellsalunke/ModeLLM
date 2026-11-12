@@ -4,6 +4,8 @@ import dev.ronellsalunke.modellm.data.repository.CatalogRepository
 import dev.ronellsalunke.modellm.data.settings.SettingsRepository
 import dev.ronellsalunke.modellm.data.settings.appSettingsDataStore
 import dev.ronellsalunke.modellm.data.sync.CatalogSyncScheduler
+import dev.ronellsalunke.modellm.ui.widget.LabLogoStore
+import dev.ronellsalunke.modellm.ui.widget.WidgetRefresher
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
@@ -21,6 +23,8 @@ val repositoryModule = module {
 
     single { CatalogSyncScheduler(androidContext()) }
     single { SettingsRepository(androidContext().appSettingsDataStore) }
+    single { LabLogoStore(androidContext()) }
+    single { WidgetRefresher(androidContext(), get(), get()) }
 }
 
 val appModules = listOf(networkModule, databaseModule, repositoryModule, viewModelModule)

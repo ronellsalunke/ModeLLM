@@ -20,6 +20,12 @@ open class CatalogQueries(
     private val modelDao: ModelDao,
     private val mapper: CatalogMapper,
 ) {
+    fun observeNewestModels(limit: Int): Flow<List<CanonicalModel>> =
+        canonicalDao
+            .observeNewestModels(limit)
+            .map { rows -> rows.map { it.toDomain() } }
+            .flowOn(Dispatchers.Default)
+
     fun observeCanonicalModels(
         query: String = "",
         filters: ModelFilters = ModelFilters(),

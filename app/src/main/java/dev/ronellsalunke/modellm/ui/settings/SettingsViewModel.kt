@@ -8,6 +8,7 @@ import dev.ronellsalunke.modellm.data.settings.AppSettings
 import dev.ronellsalunke.modellm.data.settings.SettingsRepository
 import dev.ronellsalunke.modellm.data.settings.ThemeMode
 import dev.ronellsalunke.modellm.data.sync.CatalogSyncScheduler
+import dev.ronellsalunke.modellm.ui.widget.WidgetRefresher
 import java.io.IOException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -30,6 +31,7 @@ class SettingsViewModel(
     private val repository: SettingsRepository,
     catalog: CatalogRepository,
     private val scheduler: CatalogSyncScheduler,
+    private val refresher: WidgetRefresher,
 ) : ViewModel() {
     private val error = MutableStateFlow<String?>(null)
     private val settingsLoaded = MutableStateFlow(false)
@@ -62,6 +64,7 @@ class SettingsViewModel(
             try {
                 action()
                 error.value = null
+                refresher.tryRefresh(TAG)
             } catch (_: IOException) {
                 error.value = "Couldn't save your settings. Try again."
             }
@@ -69,4 +72,8 @@ class SettingsViewModel(
     }
 
     fun refresh() = scheduler.syncNow()
+
+    private companion object {
+        const val TAG = "SettingsViewModel"
+    }
 }

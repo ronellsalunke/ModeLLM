@@ -108,9 +108,19 @@ private const val LabsPage = 2
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
-fun ModeLLMApp(onAssistWebUri: (String?) -> Unit) {
+fun ModeLLMApp(
+    onAssistWebUri: (String?) -> Unit,
+    initialCanonicalId: String? = null,
+    onCanonicalIdHandled: () -> Unit = {},
+) {
     val backStack = rememberNavBackStack(TabsRoute)
     val navigator = remember(backStack) { AppNavigator(backStack) }
+    LaunchedEffect(initialCanonicalId) {
+        if (initialCanonicalId != null) {
+            navigator.navigate(CanonicalModelDetailRoute(initialCanonicalId))
+            onCanonicalIdHandled()
+        }
+    }
     val adaptiveInfo = currentWindowAdaptiveInfoV2()
     val directive = remember(adaptiveInfo) {
         calculatePaneScaffoldDirective(adaptiveInfo).copy(horizontalPartitionSpacerSize = 0.dp)

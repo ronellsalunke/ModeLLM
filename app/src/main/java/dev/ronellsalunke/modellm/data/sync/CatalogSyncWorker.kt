@@ -6,6 +6,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import dev.ronellsalunke.modellm.data.repository.CatalogRepository
 import dev.ronellsalunke.modellm.data.repository.CatalogSyncException
+import dev.ronellsalunke.modellm.ui.widget.WidgetRefresher
 import kotlinx.coroutines.CancellationException
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -16,11 +17,13 @@ class CatalogSyncWorker(
 ) : CoroutineWorker(appContext, params), KoinComponent {
 
     private val repository: CatalogRepository by inject()
+    private val refresher: WidgetRefresher by inject()
 
     override suspend fun doWork(): Result {
         val force = inputData.getBoolean(KEY_FORCE_REFRESH, false)
         return try {
             repository.refresh(force = force)
+            refresher.tryRefresh(TAG)
             Result.success()
         } catch (e: CancellationException) {
             throw e
