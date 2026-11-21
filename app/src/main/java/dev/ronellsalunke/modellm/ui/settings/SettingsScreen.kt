@@ -1,9 +1,11 @@
 package dev.ronellsalunke.modellm.ui.settings
 
 import android.os.Build
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -18,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
@@ -35,10 +38,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.ronellsalunke.modellm.data.repository.SyncState
@@ -131,18 +137,11 @@ private fun AppearanceSettingsSection(
             modifier = Modifier.fillMaxWidth(),
         )
         SettingsTileGroup {
-            SettingsListItem(
-                trailingContent = {
-                    AppSwitch(
-                        checked = state.settings.dynamicColor,
-                        onCheckedChange = onDynamicColorChange,
-                        enabled = wallpaperSupported,
-                        modifier =
-                            Modifier.semantics {
-                                contentDescription = "Use wallpaper colors"
-                            },
-                    )
-                },
+            SettingsToggleItem(
+                checked = state.settings.dynamicColor,
+                onCheckedChange = onDynamicColorChange,
+                enabled = wallpaperSupported,
+                shape = MaterialTheme.shapes.small,
                 supportingContent =
                     if (wallpaperSupported) {
                         null
@@ -197,11 +196,63 @@ private fun SettingsListItem(
         } else {
             Modifier
         }
+    SettingsListItemRow(
+        modifier = Modifier.clip(shape).then(clickModifier),
+        supportingContent = supportingContent,
+        trailingContent = trailingContent,
+        headlineContent = headlineContent,
+    )
+}
+
+@Composable
+private fun SettingsToggleItem(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean = true,
+    shape: Shape = RectangleShape,
+    supportingContent: (@Composable () -> Unit)? = null,
+    headlineContent: @Composable () -> Unit,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val stateText = if (checked) "On" else "Off"
+    val toggleModifier =
+        Modifier.clip(shape)
+            .toggleable(
+                value = checked,
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
+                enabled = enabled,
+                role = Role.Switch,
+                onValueChange = onCheckedChange,
+            )
+            .then(if (enabled) Modifier.pointerHoverIcon(PointerIcon.Hand) else Modifier)
+            .semantics { stateDescription = stateText }
+    SettingsListItemRow(
+        modifier = toggleModifier,
+        supportingContent = supportingContent,
+        trailingContent = {
+            AppSwitch(
+                checked = checked,
+                onCheckedChange = null,
+                enabled = enabled,
+                interactionSource = interactionSource,
+            )
+        },
+        headlineContent = headlineContent,
+    )
+}
+
+@Composable
+private fun SettingsListItemRow(
+    modifier: Modifier = Modifier,
+    supportingContent: (@Composable () -> Unit)? = null,
+    trailingContent: (@Composable () -> Unit)? = null,
+    headlineContent: @Composable () -> Unit,
+) {
     Row(
         Modifier.fillMaxWidth()
             .heightIn(min = SettingsListItemMinHeight)
-            .clip(shape)
-            .then(clickModifier)
+            .then(modifier)
             .padding(horizontal = Dimens.lg, vertical = Dimens.xs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
