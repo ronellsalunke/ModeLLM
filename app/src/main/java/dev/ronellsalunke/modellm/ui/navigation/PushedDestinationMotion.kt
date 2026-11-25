@@ -36,21 +36,15 @@ internal fun pushedEnter(): EnterTransition =
 internal fun pushedExit(): ExitTransition =
     slideOutTo(ExitOffsetFraction)
 
-internal fun pushedPopEnter(): EnterTransition =
-    slideInFrom(PopEnterOffsetFraction)
-
-internal fun pushedPopExit(): ExitTransition =
-    slideOutHorizontally(PushedOffsetSpec) { it }
-
-internal fun pushedPredictivePopEnter(
-    swipeEdge: Int,
+internal fun pushedPopEnter(
+    swipeEdge: Int = NavigationEvent.EDGE_NONE,
 ): EnterTransition {
     val direction = swipeDirection(swipeEdge)
     return slideInFrom(PopEnterOffsetFraction * direction)
 }
 
-internal fun pushedPredictivePopExit(
-    swipeEdge: Int,
+internal fun pushedPopExit(
+    swipeEdge: Int = NavigationEvent.EDGE_NONE,
 ): ExitTransition {
     val direction = swipeDirection(swipeEdge)
     return slideOutHorizontally(PushedOffsetSpec) { (it * direction).toInt() }

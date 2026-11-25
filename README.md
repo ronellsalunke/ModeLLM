@@ -41,7 +41,7 @@ An offline-first Android client for [models.dev](https://models.dev)
 
 - Android Studio with support for Android Gradle Plugin 9.4
 - JDK 17 or later
-- Android SDK 37
+- Android SDK 37.2
 - A device or emulator running Android 7.0 (API 24) or later
 
 ## Build and run

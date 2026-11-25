@@ -46,13 +46,17 @@ import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberDecoratedNavEntries
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.scene.rememberNavigationEventState as rememberSceneNavigationEventState
+import androidx.navigation3.scene.rememberSceneState
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.NavigationEvent
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.NavigationEventTransitionState
 import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.NavigationEventState
 import androidx.navigationevent.compose.rememberNavigationEventState
 import dev.ronellsalunke.modellm.ui.components.CatalogShortcutState
 import dev.ronellsalunke.modellm.ui.components.FloatingTabBar
@@ -83,7 +87,7 @@ import dev.ronellsalunke.modellm.ui.navigation.TabsRoute
 import dev.ronellsalunke.modellm.ui.navigation.assistWebUri
 import dev.ronellsalunke.modellm.ui.navigation.pushedContentTransform
 import dev.ronellsalunke.modellm.ui.navigation.pushedPopContentTransform
-import dev.ronellsalunke.modellm.ui.navigation.pushedPredictivePopContentTransform
+import dev.ronellsalunke.modellm.ui.navigation.rememberScenePopSwipeEdge
 import dev.ronellsalunke.modellm.ui.providers.ProviderDetailScreen
 import dev.ronellsalunke.modellm.ui.providers.ProvidersListScreen
 import dev.ronellsalunke.modellm.ui.settings.SettingsScreen
@@ -242,30 +246,46 @@ private fun AppNavDisplay(
         remember(navigator, pagerState, swipeEnabled) {
             appEntries(navigator, pagerState, swipeEnabled)
         }
-    Box(
-        Modifier.fillMaxSize().graphicsLayer {
-            val event =
-                (backEventState.transitionState as? NavigationEventTransitionState.InProgress)
-                    ?.latestEvent
-            val progress = event?.progress ?: 0f
-            val scale = 1f - progress * (1f - BackSwipeMinScale)
-            val direction = if (event?.swipeEdge == NavigationEvent.EDGE_RIGHT) -1f else 1f
-            scaleX = scale
-            scaleY = scale
-            translationX = direction * progress * BackSwipeMaxShift.toPx()
-        },
-    ) {
+    val decoratedEntries = rememberDecoratedNavEntries(
+        backStack = backStack,
+        entryDecorators = entryDecorators,
+        entryProvider = entries,
+    )
+    val sceneState = rememberSceneState(
+        entries = decoratedEntries,
+        sceneStrategies = listOf(listDetailStrategy),
+        onBack = { navigator.goBack() },
+    )
+    val navEventState = rememberSceneNavigationEventState(sceneState)
+    val popSwipeEdge = rememberScenePopSwipeEdge(
+        sceneState = sceneState,
+        navEventState = navEventState,
+        onBack = { navigator.goBack() },
+    )
+    Box(Modifier.fillMaxSize().tabBackSwipe(backEventState)) {
         NavDisplay(
-            backStack = backStack,
-            onBack = { navigator.goBack() },
-            entryDecorators = entryDecorators,
-            sceneStrategies = listOf(listDetailStrategy),
+            sceneState = sceneState,
+            navigationEventState = navEventState,
             transitionSpec = { pushedContentTransform() },
-            popTransitionSpec = { pushedPopContentTransform() },
-            predictivePopTransitionSpec = { edge -> pushedPredictivePopContentTransform(edge) },
-            entryProvider = entries,
+            popTransitionSpec = {
+                pushedPopContentTransform(popSwipeEdge.edgeFor(initialState.key))
+            },
+            predictivePopTransitionSpec = { edge -> pushedPopContentTransform(edge) },
         )
     }
+}
+
+private fun Modifier.tabBackSwipe(
+    backEventState: NavigationEventState<out NavigationEventInfo>,
+): Modifier = graphicsLayer {
+    val event =
+        (backEventState.transitionState as? NavigationEventTransitionState.InProgress)?.latestEvent
+    val progress = event?.progress ?: 0f
+    val scale = 1f - progress * (1f - BackSwipeMinScale)
+    val direction = if (event?.swipeEdge == NavigationEvent.EDGE_RIGHT) -1f else 1f
+    scaleX = scale
+    scaleY = scale
+    translationX = direction * progress * BackSwipeMaxShift.toPx()
 }
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)

@@ -27,7 +27,9 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "dev.ronellsalunke.modellm"
     compileSdk {
-        version = release(37)
+        version = release(37) {
+            minorApiLevel = 2
+        }
     }
 
     defaultConfig {
