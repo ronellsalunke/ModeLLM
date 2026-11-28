@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -68,6 +70,7 @@ private val ChipCloseIconSize = 16.dp
 fun ModelsListScreen(
     onModelClick: (CanonicalModel) -> Unit,
     onSettings: () -> Unit,
+    gridState: LazyGridState = rememberLazyGridState(),
     viewModel: ModelsViewModel = koinViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -111,6 +114,7 @@ fun ModelsListScreen(
             },
             onRefresh = viewModel::refresh,
             onModelClick = onModelClick,
+            gridState = gridState,
             modifier = Modifier.weight(1f),
         )
     }
@@ -241,6 +245,7 @@ private fun ModelsListContent(
     onClear: () -> Unit,
     onRefresh: () -> Unit,
     onModelClick: (CanonicalModel) -> Unit,
+    gridState: LazyGridState,
     modifier: Modifier = Modifier,
 ) {
     AppPullToRefreshBox(
@@ -251,6 +256,7 @@ private fun ModelsListContent(
         LazyVerticalGrid(
             columns = GridCells.Adaptive(MinGridCellWidth),
             modifier = Modifier.fillMaxSize(),
+            state = gridState,
             contentPadding =
                 PaddingValues(
                     bottom = navigationAreaBottomPadding() + navigationBarBottomPadding(),

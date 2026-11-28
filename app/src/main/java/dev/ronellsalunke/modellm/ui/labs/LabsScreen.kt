@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -62,7 +64,11 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 @Composable
-fun LabsScreen(onLabClick: (String) -> Unit, viewModel: LabsViewModel = koinViewModel()) {
+fun LabsScreen(
+    onLabClick: (String) -> Unit,
+    gridState: LazyGridState = rememberLazyGridState(),
+    viewModel: LabsViewModel = koinViewModel(),
+) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var query by rememberSaveable { mutableStateOf("") }
     val filteredLabs =
@@ -94,6 +100,7 @@ fun LabsScreen(onLabClick: (String) -> Unit, viewModel: LabsViewModel = koinView
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(MinGridCellWidth),
                 modifier = Modifier.fillMaxSize(),
+                state = gridState,
                 contentPadding =
                     PaddingValues(
                         bottom = navigationAreaBottomPadding() + navigationBarBottomPadding(),

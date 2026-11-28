@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -146,6 +148,13 @@ private fun AppShell(
     onAssistWebUri: (String?) -> Unit,
 ) {
     val pagerState = rememberPagerState(pageCount = { TabItems.size })
+    val modelsGridState = rememberLazyGridState()
+    val providersGridState = rememberLazyGridState()
+    val labsGridState = rememberLazyGridState()
+    val tabGridStates =
+        remember(modelsGridState, providersGridState, labsGridState) {
+            listOf(modelsGridState, providersGridState, labsGridState)
+        }
     val scope = rememberCoroutineScope()
     val shortcuts = remember { CatalogShortcutState() }
     val route = backStack.lastOrNull()
@@ -153,8 +162,20 @@ private fun AppShell(
         if (route is TabsRoute) tabWebUri(pagerState.settledPage) else route?.assistWebUri()
     LaunchedEffect(webUri) { onAssistWebUri(webUri) }
     val onSelectTab: (Int) -> Unit = { page ->
+        val wasAtRoot = backStack.size == 1
         navigator.popToRoot()
-        scope.launch { pagerState.animateScrollToPage(page) }
+        scope.launch {
+            if (wasAtRoot && !pagerState.isScrollInProgress && page == pagerState.settledPage) {
+                val gridState = tabGridStates[page]
+                val visibleCount = gridState.layoutInfo.visibleItemsInfo.size
+                if (visibleCount > 0 && gridState.firstVisibleItemIndex > visibleCount) {
+                    gridState.scrollToItem(visibleCount)
+                }
+                gridState.animateScrollToItem(index = 0)
+            } else {
+                pagerState.animateScrollToPage(page)
+            }
+        }
     }
     // Restore root focus after navigation so app-wide shortcuts keep firing even when the
     // pushed screen holds no focus target of its own.
@@ -164,46 +185,69 @@ private fun AppShell(
             .onPreviewKeyEvent { event -> event.tabShortcut(shortcuts, onSelectTab) }
             .focusable(),
     ) {
-        val useRail = maxWidth >= MediumWidthBreakpoint
-        // Compact detail screens stay full screen, so the bar would cover their content.
-        val showBottomBar = !useRail && backStack.size == 1
-        // A detail opened from another detail keeps its back button so the parent stays reachable.
-        val showsDetailPane = directive.maxHorizontalPartitions >= 2 && backStack.size <= 2
-        CompositionLocalProvider(
-            LocalCatalogShortcuts provides shortcuts,
-            LocalNavigationAreaBottomPadding provides
-                if (showBottomBar) FloatingTabBarClearance else 0.dp,
-            LocalDetailShowsBackButton provides showsDetailPane.not(),
-            LocalWideLayout provides useRail,
-        ) {
-            Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
-                if (useRail) {
-                    FloatingTabRail(
+        AppShellBody(
+            useRail = maxWidth >= MediumWidthBreakpoint,
+            backStack = backStack,
+            navigator = navigator,
+            pagerState = pagerState,
+            tabGridStates = tabGridStates,
+            directive = directive,
+            shortcuts = shortcuts,
+            onSelectTab = onSelectTab,
+        )
+    }
+}
+
+@Composable
+private fun AppShellBody(
+    useRail: Boolean,
+    backStack: NavBackStack<NavKey>,
+    navigator: AppNavigator,
+    pagerState: PagerState,
+    tabGridStates: List<LazyGridState>,
+    directive: PaneScaffoldDirective,
+    shortcuts: CatalogShortcutState,
+    onSelectTab: (Int) -> Unit,
+) {
+    // Compact detail screens stay full screen, so the bar would cover their content.
+    val showBottomBar = !useRail && backStack.size == 1
+    // A detail opened from another detail keeps its back button so the parent stays reachable.
+    val showsDetailPane = directive.maxHorizontalPartitions >= 2 && backStack.size <= 2
+    CompositionLocalProvider(
+        LocalCatalogShortcuts provides shortcuts,
+        LocalNavigationAreaBottomPadding provides
+            if (showBottomBar) FloatingTabBarClearance else 0.dp,
+        LocalDetailShowsBackButton provides showsDetailPane.not(),
+        LocalWideLayout provides useRail,
+    ) {
+        Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically) {
+            if (useRail) {
+                FloatingTabRail(
+                    items = TabItems,
+                    selectedIndex = pagerState.targetPage,
+                    onSelect = onSelectTab,
+                    modifier = Modifier.fillMaxHeight(),
+                )
+            }
+            Box(Modifier.weight(1f).fillMaxHeight()) {
+                AppNavDisplay(
+                    backStack = backStack,
+                    navigator = navigator,
+                    pagerState = pagerState,
+                    tabGridStates = tabGridStates,
+                    // The rail is one tap away, and swiping a narrow list pane would
+                    // change the tab under an open detail.
+                    swipeEnabled = !useRail,
+                    directive = directive,
+                )
+                if (showBottomBar) {
+                    FloatingTabBar(
                         items = TabItems,
                         selectedIndex = pagerState.targetPage,
                         onSelect = onSelectTab,
-                        modifier = Modifier.fillMaxHeight(),
+                        modifier = Modifier.align(Alignment.BottomCenter)
+                            .offset(y = -FloatingToolbarDefaults.ScreenOffset).zIndex(1f),
                     )
-                }
-                Box(Modifier.weight(1f).fillMaxHeight()) {
-                    AppNavDisplay(
-                        backStack = backStack,
-                        navigator = navigator,
-                        pagerState = pagerState,
-                        // The rail is one tap away, and swiping a narrow list pane would
-                        // change the tab under an open detail.
-                        swipeEnabled = !useRail,
-                        directive = directive,
-                    )
-                    if (showBottomBar) {
-                        FloatingTabBar(
-                            items = TabItems,
-                            selectedIndex = pagerState.targetPage,
-                            onSelect = onSelectTab,
-                            modifier = Modifier.align(Alignment.BottomCenter)
-                                .offset(y = -FloatingToolbarDefaults.ScreenOffset).zIndex(1f),
-                        )
-                    }
                 }
             }
         }
@@ -216,6 +260,7 @@ private fun AppNavDisplay(
     backStack: NavBackStack<NavKey>,
     navigator: AppNavigator,
     pagerState: PagerState,
+    tabGridStates: List<LazyGridState>,
     swipeEnabled: Boolean,
     directive: PaneScaffoldDirective,
 ) {
@@ -243,8 +288,8 @@ private fun AppNavDisplay(
             listOf(saveableStateDecorator, viewModelStoreDecorator)
         }
     val entries: (NavKey) -> NavEntry<NavKey> =
-        remember(navigator, pagerState, swipeEnabled) {
-            appEntries(navigator, pagerState, swipeEnabled)
+        remember(navigator, pagerState, tabGridStates, swipeEnabled) {
+            appEntries(navigator, pagerState, tabGridStates, swipeEnabled)
         }
     val decoratedEntries = rememberDecoratedNavEntries(
         backStack = backStack,
@@ -292,6 +337,7 @@ private fun Modifier.tabBackSwipe(
 private fun appEntries(
     navigator: AppNavigator,
     pagerState: PagerState,
+    tabGridStates: List<LazyGridState>,
     swipeEnabled: Boolean,
 ) = entryProvider {
     entry(
@@ -302,7 +348,7 @@ private fun appEntries(
             },
         ),
     ) {
-        TabsPager(pagerState, navigator, swipeEnabled)
+        TabsPager(pagerState, tabGridStates, navigator, swipeEnabled)
     }
     entry<SettingsRoute>(metadata = ListDetailSceneStrategy.detailPane()) {
         SettingsScreen(
@@ -352,6 +398,7 @@ private fun appEntries(
 @Composable
 private fun TabsPager(
     pagerState: PagerState,
+    tabGridStates: List<LazyGridState>,
     navigator: AppNavigator,
     swipeEnabled: Boolean,
 ) {
@@ -365,25 +412,34 @@ private fun TabsPager(
         // Composed neighbouring pages must not claim focus or shortcuts. Keyed on the settled page
         // so a programmatic tab scroll is not interrupted half way through.
         CompositionLocalProvider(LocalTabPageActive provides (page == pagerState.settledPage)) {
-            TabPage(page = page, navigator = navigator)
+            TabPage(page = page, navigator = navigator, gridState = tabGridStates[page])
         }
     }
 }
 
 @Composable
-private fun TabPage(page: Int, navigator: AppNavigator) {
+private fun TabPage(
+    page: Int,
+    navigator: AppNavigator,
+    gridState: LazyGridState,
+) {
     when (page) {
         ModelsPage ->
             ModelsListScreen(
                 onModelClick = { navigator.navigate(CanonicalModelDetailRoute(it.id)) },
                 onSettings = { navigator.navigate(SettingsRoute) },
+                gridState = gridState,
             )
         ProvidersPage ->
             ProvidersListScreen(
                 onProviderClick = { navigator.navigate(ProviderDetailRoute(it)) },
+                gridState = gridState,
             )
         LabsPage ->
-            LabsScreen(onLabClick = { navigator.navigate(LabDetailRoute(it)) })
+            LabsScreen(
+                onLabClick = { navigator.navigate(LabDetailRoute(it)) },
+                gridState = gridState,
+            )
         else -> throw IllegalArgumentException("Invalid tab page index: $page")
     }
 }
